@@ -21,6 +21,7 @@ from PIL import Image, ImageChops
 from google import genai
 from google.genai import types
 from datetime import datetime
+from django.conf import settings
 
 from .prompts import (
     CLEANUP_SCENE_PROMPT,
@@ -74,28 +75,22 @@ class ScreenVisualizer:
             }
             
             filename = reference_map.get(mesh_type, '12x12_standard.jpg')
-            base_path = "/home/reid/Boss Screens/boss-security-visualizer/media/screen_references"
+            # Use dynamic path from settings
+            base_path = os.path.join(settings.MEDIA_ROOT, 'screen_references', 'master')
             ref_path = os.path.join(base_path, filename)
-            
-            # Fallback to master if specific not found (for legacy support)
-            if not os.path.exists(ref_path):
-                 # Try master directory with legacy names if needed, or just log warning
-                 # For now, let's try to find *any* reference
-                 legacy_path = os.path.join(base_path, "master", "window_fixed.png")
-                 if os.path.exists(legacy_path):
-                     logger.warning(f"Specific reference {filename} not found, using legacy fallback.")
-                     return Image.open(legacy_path)
             
             if os.path.exists(ref_path):
                 img = Image.open(ref_path)
                 logger.info(f"Loaded product reference for {mesh_type}")
                 return img
             else:
-                logger.warning(f"Product reference not found: {ref_path}")
-                return None
+                logger.critical(f"CRITICAL: Product reference not found at {ref_path}! Using fallback color texture.")
+                # Create a fallback texture (dark gray/black 100x100)
+                return Image.new('RGB', (100, 100), color=(30, 30, 30))
+
         except Exception as e:
-            logger.error(f"Failed to load product reference for {mesh_type}: {e}")
-            return None
+            logger.critical(f"CRITICAL: Failed to load product reference for {mesh_type}: {e}")
+            return Image.new('RGB', (100, 100), color=(30, 30, 30))
 
     def process_pipeline(self, user_image: Image.Image, screen_type: str = "window_fixed", opacity: str = "95", color: str = "Black", mesh_type: str = "12x12") -> Tuple[Image.Image, Image.Image, int]:
         """
@@ -111,20 +106,16 @@ class ScreenVisualizer:
             clean_img = self.step_1_cleanse(user_image)
             self._save_debug_image(clean_img, "1_cleanse")
             
-            # Step 2: The Build Out (Conditional)
-            if self._analyze_structure(clean_img):
-                build_img = self.step_2_build_out(clean_img)
-                self._save_debug_image(build_img, "2_build_out")
-            else:
-                logger.info("Step 2: Build Out skipped (not required).")
-                build_img = clean_img
-                self._save_debug_image(build_img, "2_build_skipped")
+            # Step 2: Validation (Strict)
+            # Replaces the old "Build Out" step
+            if not self._validate_openings(clean_img):
+                raise ScreenVisualizerError("Please ensure to upload a photo with openings matching your selection.")
             
             # Step 3: The Screen Install
             # Load reference image based on mesh_type
             product_ref = self._get_product_reference(mesh_type)
             
-            final_img = self.step_3_install_screen(build_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type)
+            final_img = self.step_3_install_screen(clean_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type)
             self._save_debug_image(final_img, "3_install")
             
             # Step 4: The Check
@@ -151,6 +142,8 @@ class ScreenVisualizer:
 
             return clean_img, final_img, qc_score
             
+        except ScreenVisualizerError:
+            raise
         except Exception as e:
             logger.error(f"Pipeline failed: {e}")
             raise ScreenVisualizerError(f"Pipeline failed: {e}") from e
@@ -165,17 +158,31 @@ class ScreenVisualizer:
             include_thoughts=True
         )
 
-    def step_2_build_out(self, image: Image.Image) -> Image.Image:
+    def _validate_openings(self, image: Image.Image) -> bool:
         """
-        Step 2: The Build Out.
+        Step 2: Validation.
+        Analyze if the image contains clear openings suitable for screens.
         """
-        logger.info("Step 2: The Build Out")
-        prompt = "Analyze the previous image. Add structural build-outs (columns/headers) where indicated to support screens. Ensure the new structure matches the house texture."
-        
-        return self._generate_image(
-            contents=[image, prompt],
-            include_thoughts=True
-        )
+        logger.info("Step 2: Validation")
+        try:
+            prompt = "Analyze this image. Are there visible windows, doors, or patio openings suitable for installing screens? Answer YES or NO."
+            
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[image, prompt]
+            )
+            
+            result = response.text.strip().upper()
+            logger.info(f"Validation result: {result}")
+            return "YES" in result
+            
+        except Exception as e:
+            logger.error(f"Validation failed: {e}")
+            # Fail safe: if we can't validate, we assume it's okay to try, 
+            # or we could be strict. Instructions say "STOP and raise error".
+            # But if the API fails, maybe we shouldn't block user?
+            # Let's be strict as per "Strict Validation" requirement.
+            return False
 
     def step_3_install_screen(self, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12") -> Image.Image:
         """
@@ -186,8 +193,11 @@ class ScreenVisualizer:
         # Use the centralized prompt generator
         prompt = get_screen_insertion_prompt(screen_type, color, opacity, mesh_type)
         
+        # Add strict constraint against architectural changes
+        prompt += " Do not alter the house architecture. Only apply the screen texture to existing openings."
+        
         if retry:
-            prompt = "The previous installation was not perfect. Please refine the screens. Ensure they are fully covering the openings and the texture is realistic."
+            prompt = "The previous installation was not perfect. Please refine the screens. Ensure they are fully covering the openings and the texture is realistic. Do not alter the house architecture."
 
         # Stateless call: We MUST send the image
         # Order matters: [User Image, Reference Image, Prompt]
@@ -258,36 +268,18 @@ class ScreenVisualizer:
                     return content
             return Image.new('RGB', (512, 512), color='gray')
             
+        except ScreenVisualizerError:
+            raise
         except Exception as e:
-            logger.error(f"Image generation failed with error: {str(e)}")
-            raise ScreenVisualizerError(f"Gemini generation failed: {str(e)}") from e
-
-    def _analyze_structure(self, image: Image.Image) -> bool:
-        """
-        Helper to analyze if structure is needed using Vision API.
-        """
-        try:
-            prompt = "Analyze this image of a house. Does the patio or outdoor area require structural build-out (like pillars, beams, or headers) to support a motorized screen? Answer with YES or NO only."
-            
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=[image, prompt]
-            )
-            
-            result = response.text.strip().upper()
-            logger.info(f"Structure analysis result: {result}")
-            return "YES" in result
-            
-        except Exception as e:
-            logger.error(f"Structure analysis failed: {e}")
-            return False
+            logger.error(f"Pipeline failed: {e}")
+            raise ScreenVisualizerError(f"Pipeline failed: {e}") from e
 
     def _save_debug_image(self, image: Image.Image, step_name: str):
         """Save intermediate image for debugging."""
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"pipeline_{timestamp}_{step_name}.jpg"
-            save_path = os.path.join("/home/reid/Boss Screens/boss-security-visualizer/media/pipeline_steps", filename)
+            save_path = os.path.join(settings.MEDIA_ROOT, "pipeline_steps", filename)
             
             # Ensure directory exists
             os.makedirs(os.path.dirname(save_path), exist_ok=True)

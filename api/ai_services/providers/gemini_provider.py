@@ -12,7 +12,6 @@ from PIL import Image
 from ..interfaces import (
     AIServiceProvider,
     AIImageGenerationService,
-    AIVisionService,
     AIServiceType,
     AIServiceConfig,
     AIServiceResult,
@@ -33,15 +32,12 @@ class GeminiProvider(AIServiceProvider):
     def get_available_services(self) -> List[AIServiceType]:
         return [
             AIServiceType.IMAGE_GENERATION,
-            AIServiceType.COMPUTER_VISION,
             AIServiceType.IMAGE_ENHANCEMENT
         ]
 
     def create_service(self, service_type: AIServiceType, config: AIServiceConfig):
         if service_type == AIServiceType.IMAGE_GENERATION:
             return GeminiImageGenerationService(config)
-        elif service_type == AIServiceType.COMPUTER_VISION:
-            return GeminiVisionService(config)
         elif service_type == AIServiceType.IMAGE_ENHANCEMENT:
             return GeminiImageGenerationService(config) # Enhancement handled by generation service
         else:
@@ -152,50 +148,6 @@ class GeminiImageGenerationService(AIImageGenerationService):
 
     def get_service_status(self) -> Dict[str, Any]:
         return {"status": "active", "provider": "gemini"}
-
-class GeminiVisionService(AIVisionService):
-    """
-    Computer vision service using Gemini.
-    """
-    
-    def _validate_config(self) -> None:
-        pass
-
-    def detect_windows_and_doors(
-        self,
-        image: Image.Image,
-        confidence_threshold: float = 0.7,
-        screen_type: str = None
-    ) -> WindowDetectionResult:
-        # TODO: Implement vision detection
-        return WindowDetectionResult(
-            success=True,
-            status=ProcessingStatus.COMPLETED,
-            detected_windows=[]
-        )
-
-    def analyze_screen_pattern(
-        self,
-        image: Image.Image,
-        screen_area: Tuple[int, int, int, int] = None
-    ) -> ScreenAnalysisResult:
-        # TODO: Implement analysis
-        return ScreenAnalysisResult(
-            success=True,
-            status=ProcessingStatus.COMPLETED
-        )
-
-    def assess_image_quality(
-        self,
-        image: Image.Image,
-        reference_image: Image.Image = None
-    ) -> QualityAssessmentResult:
-        # TODO: Implement assessment
-        return QualityAssessmentResult(
-            success=True,
-            status=ProcessingStatus.COMPLETED,
-            overall_score=0.9
-        )
 
     def get_service_status(self) -> Dict[str, Any]:
         return {"status": "active", "provider": "gemini"}
