@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Home, Shield, DoorOpen, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Home, Shield, DoorOpen } from 'lucide-react';
 import useVisualizationStore from '../../store/visualizationStore';
 
 const Step2Scope = ({ nextStep, prevStep }) => {
-    const { scope, setScope } = useVisualizationStore();
+    const { setScope } = useVisualizationStore();
     const [subStep, setSubStep] = useState('patio');
 
     const handleYes = (key, value = true) => {
         setScope(key, value);
-        advanceSubStep();
+        // Pass the value directly for branching decisions
+        advanceSubStep(key, true);
     };
 
     const handleNo = (key) => {
@@ -16,16 +17,18 @@ const Step2Scope = ({ nextStep, prevStep }) => {
         if (key === 'hasDoors') {
             setScope('doorType', null);
         }
-        advanceSubStep();
+        // Pass the value directly for branching decisions
+        advanceSubStep(key, false);
     };
 
-    const advanceSubStep = () => {
+    const advanceSubStep = (lastKey, lastValue) => {
         if (subStep === 'patio') {
             setSubStep('windows');
         } else if (subStep === 'windows') {
             setSubStep('doors');
         } else if (subStep === 'doors') {
-            if (scope.hasDoors) {
+            // Use the passed value instead of reading from scope
+            if (lastKey === 'hasDoors' && lastValue === true) {
                 setSubStep('doorType');
             } else {
                 nextStep();
