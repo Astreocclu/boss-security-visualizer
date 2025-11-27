@@ -23,12 +23,14 @@ The core value proposition is the high-fidelity AI processing pipeline, which fo
 ### Step 2: Frame the Image (Structural Build-Out)
 *   **Goal**: Ensure there is a physical structure to hold the screens.
 *   **Action**: The AI analyzes the patio or window openings. If structural elements (like pillars, headers, or beams) are missing or insufficient to support a motorized screen, the AI generates them.
+*   **Geometric Analysis**: The AI specifically checks for "Wide Spans" (openings > 5ft wide).
 *   **Detail**: New structural elements must match the existing house texture and architecture perfectly.
 
 ### Step 3: Install Screens (The "Money Shot")
 *   **Goal**: Apply the screen material realistically.
 *   **Action**: Apply screen material using reference textures.
-*   **Constraint**: **Frame ONLY the outer edges.** Do NOT add internal beams, bars, or dividers.
+*   **Standard Constraint**: Frame ONLY the outer edges for standard windows.
+*   **Wide Span Constraint**: If is_wide_span is TRUE, you MUST install vertical aluminum mullions (dividers) spaced evenly (approx. every 5ft). Mesh sits tightly between these mullions.
 *   **Details**: Consider physics (screens down, lighting, shadows, transparency), opacity, and color.
 *   **Inputs**:
     *   **Reference Texture**: Uses real-world photos of screen mesh (e.g., "Lifestyle/Environmental" at 95% opacity) to ensure texture accuracy.

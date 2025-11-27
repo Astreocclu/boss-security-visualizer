@@ -103,5 +103,23 @@ class TestScreenVisualizer(unittest.TestCase):
              self.assertEqual(img.size, (100, 100))
              # Should log critical error (we can verify log if needed, but return value is enough)
 
+    def test_wide_span_logic(self):
+        # Mock internal methods
+        self.visualizer.step_1_cleanse = MagicMock(return_value=self.mock_image)
+        self.visualizer._validate_openings = MagicMock(return_value=True)
+        self.visualizer._analyze_structure = MagicMock(return_value=True) # Wide span detected
+        self.visualizer.step_3_install_screen = MagicMock(return_value=self.mock_image)
+        self.visualizer.step_4_quality_check = MagicMock(return_value=(True, 95))
+        self.visualizer._get_product_reference = MagicMock(return_value=self.mock_image)
+        self.visualizer._save_debug_image = MagicMock()
+
+        self.visualizer.process_pipeline(self.mock_image, mesh_type="12x12")
+
+        self.visualizer._analyze_structure.assert_called_once()
+        # Verify is_wide_span=True is passed
+        self.visualizer.step_3_install_screen.assert_called_with(
+            ANY, ANY, "window_fixed", opacity="95", color="Black", mesh_type="12x12", is_wide_span=True
+        )
+
 if __name__ == '__main__':
     unittest.main()

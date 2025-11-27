@@ -39,7 +39,7 @@ def get_structural_prompt(category):
         # Fallback or default
         return "Fit flush-mounted security screens with 0.035-inch diameter stainless steel mesh."
 
-def get_screen_insertion_prompt(screen_type, color="Black", opacity="95%", mesh_type="12x12"):
+def get_screen_insertion_prompt(screen_type, is_wide_span=False, color="Black", opacity="95%", mesh_type="12x12"):
     """
     Combines physics and structure into the final prompt.
     """
@@ -52,6 +52,11 @@ def get_screen_insertion_prompt(screen_type, color="Black", opacity="95%", mesh_
         
     physics = get_mesh_physics(mesh_type)
     structure = get_structural_prompt(category)
+
+    if is_wide_span:
+        structure += " STRICT: This is a WIDE SPAN opening. You MUST install vertical aluminum mullions (dividers) spaced evenly (approx. every 5ft). Mesh sits tightly between these mullions."
+    else:
+        structure += " STRICT: Ensure a clean, unobstructed view. No internal bars or dividers."
     
     return f"""
     {physics}

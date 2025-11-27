@@ -1,5 +1,6 @@
 import requests
 import os
+import json
 
 # Configuration
 BASE_URL = 'http://localhost:8000'
@@ -25,7 +26,7 @@ def test_create_visualization(access_token):
     
     # Data matching the frontend request
     data = {
-        'screen_type': 'window_fixed',
+        'screen_categories': json.dumps(['Door']), # Test Door Logic
         'opacity': '95',
         'color': 'Black',
         'mesh_choice': '12x12',
@@ -60,6 +61,8 @@ def test_create_visualization(access_token):
                 
                 if status == 'complete':
                     print("SUCCESS: Processing completed!")
+                    print("Final JSON Response:")
+                    print(json.dumps(status_data, indent=2)) # Use status_data here as it's the latest status
                     return True
                 elif status == 'failed':
                     print(f"FAILURE: Processing failed. Error: {status_data.get('error_message')}")

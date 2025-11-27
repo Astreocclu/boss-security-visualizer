@@ -82,7 +82,19 @@ class AIEnhancedImageProcessor:
 
             # Load the original image
             original_image = Image.open(visualization_request.original_image.path)
-            screen_type = visualization_request.screen_type
+            
+            # Derive screen_type from categories if available
+            screen_type = visualization_request.screen_type # Default
+            if visualization_request.screen_categories:
+                categories = [c.lower() for c in visualization_request.screen_categories]
+                if 'patio' in categories:
+                    screen_type = 'patio_enclosure'
+                elif 'door' in categories:
+                    screen_type = 'door_single'
+                else:
+                    screen_type = 'window_fixed'
+            
+            logger.info(f"Derived screen_type: {screen_type} from categories: {visualization_request.screen_categories}")
 
             # Get image generation service (Gemini)
             generation_service = AIServiceFactory.create_image_generation_service(
@@ -179,7 +191,10 @@ class AIEnhancedImageProcessor:
             generated_image = GeneratedImage(request=request)
             if metadata:
                 # Filter out binary data from metadata
-                clean_metadata = {k: v for k, v in metadata.items() if k != 'generated_image_data'}
+                clean_metadata = {
+                    k: v for k, v in metadata.items() 
+                    if not isinstance(v, bytes) and k not in ['generated_image_data', 'clean_image_data']
+                }
                 generated_image.metadata = clean_metadata
                 
             generated_image.generated_image.save(

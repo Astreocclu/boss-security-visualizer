@@ -111,11 +111,14 @@ class ScreenVisualizer:
             if not self._validate_openings(clean_img):
                 raise ScreenVisualizerError("Please ensure to upload a photo with openings matching your selection.")
             
+            # Geometric Analysis
+            is_wide_span = self._analyze_structure(clean_img)
+            
             # Step 3: The Screen Install
             # Load reference image based on mesh_type
             product_ref = self._get_product_reference(mesh_type)
             
-            final_img = self.step_3_install_screen(clean_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type)
+            final_img = self.step_3_install_screen(clean_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type, is_wide_span=is_wide_span)
             self._save_debug_image(final_img, "3_install")
             
             # Step 4: The Check
@@ -128,7 +131,7 @@ class ScreenVisualizer:
             else:
                 logger.warning(f"Step 4: QC Failed (Score: {qc_score}). Retrying Step 3...")
                 
-                final_img_retry = self.step_3_install_screen(final_img, product_ref, screen_type, retry=True, opacity=opacity, color=color, mesh_type=mesh_type)
+                final_img_retry = self.step_3_install_screen(final_img, product_ref, screen_type, retry=True, opacity=opacity, color=color, mesh_type=mesh_type, is_wide_span=is_wide_span)
                 self._save_debug_image(final_img_retry, "4_final_retry")
                 
                 if self._is_identical(user_image, final_img_retry):
@@ -184,14 +187,34 @@ class ScreenVisualizer:
             # Let's be strict as per "Strict Validation" requirement.
             return False
 
-    def step_3_install_screen(self, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12") -> Image.Image:
+    def _analyze_structure(self, image: Image.Image) -> bool:
+        """
+        Analyze the structure to detect wide spans (> 5ft).
+        """
+        logger.info("Analyzing structure for wide spans...")
+        try:
+            prompt = "Look at the openings in this building facade. Are there any LARGE openings (like patios, lanais, or sliding walls) that appear wider than 5 feet (roughly wider than a standard door)? Answer YES or NO."
+            
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[image, prompt]
+            )
+            
+            result = response.text.strip().upper()
+            logger.info(f"Wide Span Analysis: {result}")
+            return "YES" in result
+        except Exception as e:
+            logger.error(f"Structure analysis failed: {e}")
+            return False
+
+    def step_3_install_screen(self, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12", is_wide_span: bool = False) -> Image.Image:
         """
         Step 3: The Screen Install.
         """
-        logger.info(f"Step 3: The Screen Install (Type={screen_type}, Mesh={mesh_type}, Retry={retry}, Opacity={opacity}, Color={color})")
+        logger.info(f"Step 3: The Screen Install (Type={screen_type}, Mesh={mesh_type}, Retry={retry}, Opacity={opacity}, Color={color}, WideSpan={is_wide_span})")
         
         # Use the centralized prompt generator
-        prompt = get_screen_insertion_prompt(screen_type, color, opacity, mesh_type)
+        prompt = get_screen_insertion_prompt(screen_type, is_wide_span, color, opacity, mesh_type)
         
         # Add strict constraint against architectural changes
         prompt += " Do not alter the house architecture. Only apply the screen texture to existing openings."
