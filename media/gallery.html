@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen King - Generated Images Gallery</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .card-title {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: #4CAF50;
+        }
+
+        .card-info {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90vh;
+            margin-top: 2%;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        h1 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .refresh-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Generated Images Gallery</h1>
+    <button class="refresh-btn" onclick="loadImages()">Refresh Gallery</button>
+    <div id="gallery" class="gallery">
+        <!-- Images will be loaded here -->
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
+    <script>
+        function log(msg) {
+            console.log(msg);
+            const debug = document.getElementById('debug');
+            debug.style.display = 'block';
+            debug.innerHTML += `<div>${new Date().toISOString().split('T')[1]} - ${msg}</div>`;
+        }
+
+        // Fetch images from the API
+        async function loadImages() {
+            try {
+                log('Starting loadImages...');
+                // We'll use the public API endpoint if possible, but for this standalone file
+                // we might need to rely on a script generating a JSON index or just list known directories.
+                // Since this is served from media/, we can try to list files if directory listing is enabled,
+                // OR we can fetch from the API if we have a token. 
+
+                // BETTER APPROACH: Since we are in the Django environment, let's just make this a template 
+                // rendered by a simple view, OR fetch from the API using the user's session if logged in.
+
+                // Try to get token from localStorage (where the React app stores it)
+                const token = localStorage.getItem('access_token');
+                log(token ? 'Token found in localStorage' : 'No token found in localStorage');
+                const headers = {};
+
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                } else {
+                    document.getElementById('gallery').innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h3>🔒 Authentication Required</h3>
+                            <p>Please log in to the main application first.</p>
+                            <a href="/" style="background: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Go to Login</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                log('Fetching /api/generated-images/?limit=100');
+                const response = await fetch('/api/generated-images/?limit=100', {
+                    headers: headers
+                });
+
+                log(`Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        document.getElementById('gallery').innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h3>🔒 Session Expired</h3>
+                                <p>Your login session has expired.</p>
+                                <a href="/" style="background: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Login Again</a>
+                            </div>
+                         `;
+                        return;
+                    }
+                    const text = await response.text();
+                    log(`Error response: ${text}`);
+                    throw new Error('Failed to load images');
+                }
+
+                const data = await response.json();
+                log(`Data received. Results count: ${data.results ? data.results.length : 'undefined'}`);
+
+                // The /api/generated-images/ endpoint returns a list of images directly
+                const images = data.results || [];
+
+                log(`Total images: ${images.length}`);
+
+                const gallery = document.getElementById('gallery');
+                gallery.innerHTML = '';
+
+                if (images.length === 0) {
+                    gallery.innerHTML = '<p>No generated images found.</p>';
+                    return;
+                }
+
+                images.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <img src="${img.generated_image_url}" onclick="openModal('${img.generated_image_url}')" alt="Generated Image">
+                        <div class="card-body">
+                            <h3 class="card-title">Result #${img.id}</h3>
+                            <div class="card-info">Size: ${img.file_size_mb} MB</div>
+                            <div class="card-info">Dimensions: ${img.dimensions}</div>
+                            <div class="card-info">Created: ${new Date(img.generated_at).toLocaleString()}</div>
+                            <div class="card-info"><a href="${img.generated_image_url}" download target="_blank" style="color:#2196F3">Download Original</a></div>
+                        </div>
+                    `;
+                    gallery.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('gallery').innerHTML = '<p>Error loading images. Ensure you are logged in.</p>';
+            }
+        }
+
+        function openModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Load on start
+        loadImages();
+    </script>
+</body>
+
+</html>

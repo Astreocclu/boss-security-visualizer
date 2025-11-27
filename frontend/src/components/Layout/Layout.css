@@ -1,0 +1,149 @@
+/* Layout Styles */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.layout-fluid {
+  max-width: none;
+  padding: 0;
+}
+
+.layout-header {
+  flex-shrink: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.layout-body {
+  flex: 1;
+  display: flex;
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.layout-sidebar {
+  flex-shrink: 0;
+  width: 250px;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: calc(80px + 2rem); /* Header height + padding */
+}
+
+.layout-main {
+  flex: 1;
+  min-width: 0; /* Prevent flex item from overflowing */
+}
+
+.layout-footer {
+  flex-shrink: 0;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  padding: 2rem 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .layout {
+    padding: 0 0.75rem;
+  }
+  
+  .layout-body {
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+  }
+  
+  .layout-sidebar {
+    width: 200px;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    padding: 0 0.5rem;
+  }
+  
+  .layout-body {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+  
+  .layout-sidebar {
+    width: 100%;
+    position: static;
+    order: 2; /* Move sidebar below main content on mobile */
+  }
+  
+  .layout-main {
+    order: 1;
+  }
+  
+  .layout-header {
+    padding: 0.75rem 0;
+  }
+  
+  .layout-footer {
+    padding: 1.5rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout {
+    padding: 0 0.25rem;
+  }
+  
+  .layout-body {
+    padding: 0.75rem 0;
+  }
+  
+  .layout-sidebar {
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+  }
+  
+  .layout-header {
+    padding: 0.5rem 0;
+  }
+  
+  .layout-footer {
+    padding: 1rem 0;
+    font-size: 0.75rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .layout-sidebar {
+    display: none;
+  }
+  
+  .layout-header,
+  .layout-footer {
+    display: none;
+  }
+  
+  .layout {
+    max-width: none;
+    padding: 0;
+  }
+  
+  .layout-body {
+    padding: 0;
+  }
+}

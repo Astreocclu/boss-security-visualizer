@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Security",
+      "description": "Heavy-duty stainless steel mesh for break-in prevention and security protection",
+      "is_active": true,
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Lifestyle",
+      "description": "Fine mesh for privacy, comfort, and environmental protection including UV blocking",
+      "is_active": true,
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  ]
+}

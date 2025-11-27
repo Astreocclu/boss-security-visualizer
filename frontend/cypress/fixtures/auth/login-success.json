@@ -1,0 +1,11 @@
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk5OTk5OTk5LCJpYXQiOjE2OTk5OTk5OTksImp0aSI6IjEyMzQ1Njc4OTAiLCJ1c2VyX2lkIjoxfQ.test-token",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY5OTk5OTk5OSwiaWF0IjoxNjk5OTk5OTk5LCJqdGkiOiIwOTg3NjU0MzIxIiwidXNlcl9pZCI6MX0.test-refresh-token",
+  "user": {
+    "id": 1,
+    "username": "testuser",
+    "email": "testuser@example.com",
+    "first_name": "Test",
+    "last_name": "User"
+  }
+}

@@ -1,0 +1,218 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { getVisualizationRequestById, regenerateVisualizationRequest } from '../services/api';
+import './ResultDetailPage.css';
+
+import Skeleton from '../components/Common/Skeleton';
+
+const ResultDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const sliderRef = React.useRef(null);
+
+  const [request, setRequest] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  useEffect(() => {
+
+
+    const fetchRequestDetails = async () => {
+      try {
+        const data = await getVisualizationRequestById(id);
+        setRequest(data);
+        setError(null);
+
+        if (data.status === 'complete' || data.status === 'failed') {
+          setIsLoading(false);
+          setIsRegenerating(false);
+          return true; // Stop polling
+        }
+      } catch (err) {
+        console.error(`Error fetching visualization request #${id}:`, err);
+        if (err.response?.status === 404) {
+          setError(`Visualization request #${id} not found.`);
+          return true;
+        } else {
+          if (isLoading) {
+            setError('Failed to load visualization request details. Please try again later.');
+          }
+        }
+      } finally {
+        if (!isRegenerating) {
+          setIsLoading(false);
+        }
+      }
+      return false; // Continue polling
+    };
+
+    fetchRequestDetails();
+
+    const pollInterval = setInterval(async () => {
+      const shouldStop = await fetchRequestDetails();
+      if (shouldStop) {
+        clearInterval(pollInterval);
+      }
+    }, 3000);
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [id, isRegenerating]);
+
+  const handleRegenerate = async () => {
+    try {
+      setIsRegenerating(true);
+      await regenerateVisualizationRequest(id);
+      // Polling will pick up the status change
+    } catch (err) {
+      console.error('Failed to regenerate:', err);
+      setError('Failed to start regeneration. Please try again.');
+      setIsRegenerating(false);
+    }
+  };
+
+  if (isLoading && !request) {
+    return (
+      <div className="result-detail-page">
+        <div className="result-header">
+          <div>
+            <Skeleton variant="text" width={200} height={32} style={{ marginBottom: '10px' }} />
+            <Skeleton variant="text" width={150} />
+          </div>
+          <Skeleton variant="rectangular" width={100} height={30} style={{ borderRadius: '15px' }} />
+        </div>
+
+        <div className="comparison-slider-container" style={{ backgroundColor: '#f0f0f0', border: 'none' }}>
+          <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
+        </div>
+
+        <div className="action-bar">
+          <Skeleton variant="rectangular" width={120} height={40} style={{ borderRadius: '4px' }} />
+          <Skeleton variant="rectangular" width={120} height={40} style={{ borderRadius: '4px' }} />
+          <Skeleton variant="rectangular" width={120} height={40} style={{ borderRadius: '4px' }} />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="result-detail-page error">
+        <h1>Error</h1>
+        <div className="error-message">{error}</div>
+        <Link to="/results" className="btn btn-secondary">Back to Results</Link>
+      </div>
+    );
+  }
+
+  const resultImage = request.results && request.results.length > 0 ? request.results[0] : null;
+  const resultImageUrl = resultImage ? resultImage.generated_image_url : null;
+  const qualityScore = resultImage?.metadata?.quality_score || 0;
+
+  const getScoreColorClass = (score) => {
+    if (score >= 90) return 'high';
+    if (score >= 70) return 'medium';
+    return 'low';
+  };
+
+  return (
+    <div className="result-detail-page">
+      {(isRegenerating || request.status === 'processing' || request.status === 'pending') && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>{request.status_message || 'Processing...'}</p>
+          <p className="progress-text">{request.progress_percentage}%</p>
+        </div>
+      )}
+
+      <div className="result-header">
+        <div>
+          <h2>Visualization #{id}</h2>
+          <span className="text-muted">{new Date(request.created_at).toLocaleString()}</span>
+        </div>
+        <div className={`status-badge status-${request.status}`}>
+          {request.status}
+        </div>
+      </div>
+
+      <div className="comparison-slider-container" ref={sliderRef}>
+        <div
+          className="slider-wrapper"
+          onMouseMove={(e) => {
+            if (!sliderRef.current) return;
+            const rect = sliderRef.current.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            const percentage = (x / rect.width) * 100;
+            sliderRef.current.style.setProperty('--slider-position', `${percentage}%`);
+          }}
+          onTouchMove={(e) => {
+            if (!sliderRef.current) return;
+            const rect = sliderRef.current.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.touches[0].clientX - rect.left, rect.width));
+            const percentage = (x / rect.width) * 100;
+            sliderRef.current.style.setProperty('--slider-position', `${percentage}%`);
+          }}
+        >
+          <div className="image-layer after-image">
+            {resultImageUrl ? (
+              <img src={resultImageUrl} alt="With Screens" />
+            ) : (
+              <div className="placeholder-image">Processing...</div>
+            )}
+            <span className="label after-label">Finalized</span>
+          </div>
+
+          <div className="image-layer before-image">
+            <img
+              src={request.clean_image_url || request.original_image_url}
+              alt={request.clean_image_url ? "Clean Home" : "Original Home"}
+            />
+            <span className="label before-label">
+              {request.clean_image_url ? 'Clean' : 'Original'}
+            </span>
+          </div>
+
+          <div className="slider-handle">
+            <div className="handle-line"></div>
+            <div className="handle-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+                <path d="M9 18l6-6-6-6" transform="rotate(180 12 12)" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {request.status === 'complete' && (
+        <div className="quality-score-section">
+          <div className={`score-circle ${getScoreColorClass(qualityScore)}`}>
+            <span className="score-value">{qualityScore}</span>
+          </div>
+          <div className="score-label">Quality Score</div>
+          <p className="text-muted mt-2">
+            Based on AI analysis of realism, installation accuracy, and image clarity.
+          </p>
+        </div>
+      )}
+
+      <div className="action-bar">
+        <Link to="/results" className="btn btn-secondary">
+          ← Back to Gallery
+        </Link>
+
+        <button onClick={handleRegenerate} className="btn btn-regenerate" disabled={isRegenerating}>
+          ↻ Regenerate
+        </button>
+
+        <Link to="/upload" className="btn btn-primary">
+          + New Upload
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default ResultDetailPage;

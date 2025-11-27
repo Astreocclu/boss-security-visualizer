@@ -1,0 +1,14 @@
+{
+  "message": "User created successfully",
+  "user": {
+    "id": 2,
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "first_name": "New",
+    "last_name": "User"
+  },
+  "tokens": {
+    "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjk5OTk5OTk5LCJpYXQiOjE2OTk5OTk5OTksImp0aSI6IjEyMzQ1Njc4OTAiLCJ1c2VyX2lkIjoyfQ.test-token-new",
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY5OTk5OTk5OSwiaWF0IjoxNjk5OTk5OTk5LCJqdGkiOiIwOTg3NjU0MzIxIiwidXNlcl9pZCI6Mn0.test-refresh-token-new"
+  }
+}

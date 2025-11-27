@@ -1,0 +1,46 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "user": {
+        "id": 1,
+        "username": "testuser"
+      },
+      "original_image_url": "http://example.com/test-image.jpg",
+      "screen_type_name": "Security",
+      "status": "completed",
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z",
+      "result_count": 3,
+      "generated_images": [
+        {
+          "id": 1,
+          "image_url": "http://example.com/generated-1.jpg",
+          "created_at": "2023-01-01T00:00:00Z"
+        },
+        {
+          "id": 2,
+          "image_url": "http://example.com/generated-2.jpg",
+          "created_at": "2023-01-01T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "user": {
+        "id": 1,
+        "username": "testuser"
+      },
+      "original_image_url": "http://example.com/test-image-2.jpg",
+      "screen_type_name": "Lifestyle",
+      "status": "pending",
+      "created_at": "2023-01-02T00:00:00Z",
+      "updated_at": "2023-01-02T00:00:00Z",
+      "result_count": 0,
+      "generated_images": []
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+/* Virtual List Styles */
+.virtual-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.virtual-list-spacer {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-list-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.virtual-list-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  box-sizing: border-box;
+}
+
+.virtual-list-item:last-child {
+  border-bottom: none;
+}
+
+/* Smooth scrolling */
+.virtual-list {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.virtual-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtual-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.virtual-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.virtual-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox scrollbar */
+.virtual-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Focus styles */
+.virtual-list:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+/* Loading state */
+.virtual-list-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+}
+
+/* Empty state */
+.virtual-list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+  text-align: center;
+  padding: 2rem;
+}
+
+.virtual-list-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.virtual-list-empty-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.virtual-list-empty-description {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .virtual-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .virtual-list-item {
+    padding: 0.5rem;
+  }
+  
+  .virtual-list-empty {
+    padding: 1rem;
+  }
+  
+  .virtual-list-empty-icon {
+    font-size: 2rem;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .virtual-list-item {
+    border-bottom-color: #000000;
+  }
+  
+  .virtual-list::-webkit-scrollbar-thumb {
+    background: #000000;
+  }
+  
+  .virtual-list {
+    scrollbar-color: #000000 #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .virtual-list {
+    scroll-behavior: auto;
+  }
+  
+  .virtual-list-content {
+    will-change: auto;
+  }
+  
+  .virtual-list::-webkit-scrollbar-thumb {
+    transition: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .virtual-list {
+    overflow: visible;
+    height: auto !important;
+  }
+  
+  .virtual-list-spacer {
+    height: auto !important;
+  }
+  
+  .virtual-list-content {
+    position: static;
+    transform: none !important;
+    height: auto !important;
+  }
+  
+  .virtual-list-item {
+    page-break-inside: avoid;
+  }
+}
