@@ -13,7 +13,7 @@ from .auth_views import (
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
-router.register(r'screentypes', views.ScreenTypeViewSet, basename='screentype')
+
 router.register(r'visualizations', views.VisualizationRequestViewSet, basename='visualizationrequest')
 router.register(r'generated-images', views.GeneratedImageViewSet, basename='generatedimage')
 router.register(r'profile', views.UserProfileViewSet, basename='userprofile')
@@ -32,5 +32,6 @@ urlpatterns = [
     path('auth/profile/update/', update_profile, name='update_profile'),
 
     # API endpoints
+    path('visualization/<int:pk>/pdf/', views.VisualizationRequestViewSet.as_view({'get': 'pdf'}), name='visualization-pdf'),
     path('', include(router.urls)),
 ]

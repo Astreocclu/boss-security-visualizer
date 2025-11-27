@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from PIL import Image
 import io
-from .models import VisualizationRequest, GeneratedImage, ScreenType, UserProfile
+from .models import VisualizationRequest, GeneratedImage, UserProfile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -58,37 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.username
 
 
-class ScreenTypeSerializer(serializers.ModelSerializer):
-    """Enhanced serializer for screen types."""
 
-    request_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ScreenType
-        fields = [
-            'id', 'name', 'description', 'is_active', 'sort_order',
-            'request_count', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['created_at', 'updated_at', 'request_count']
-
-    def get_request_count(self, obj):
-        """Get number of requests using this screen type."""
-        return obj.get_request_count()
-
-    def validate_name(self, value):
-        """Validate screen type name."""
-        if not value or not value.strip():
-            raise ValidationError("Screen type name cannot be empty.")
-
-        # Check for uniqueness (case-insensitive)
-        existing = ScreenType.objects.filter(name__iexact=value.strip())
-        if self.instance:
-            existing = existing.exclude(pk=self.instance.pk)
-
-        if existing.exists():
-            raise ValidationError("A screen type with this name already exists.")
-
-        return value.strip().title()
 
 
 class GeneratedImageSerializer(serializers.ModelSerializer):
@@ -120,10 +90,9 @@ class GeneratedImageSerializer(serializers.ModelSerializer):
 class VisualizationRequestListSerializer(serializers.ModelSerializer):
     """Optimized serializer for listing requests with minimal data."""
 
-    screen_type_name = serializers.CharField(
-        source='screen_type.name',
-        read_only=True,
-        allow_null=True
+    screen_type_display = serializers.CharField(
+        source='get_screen_type_display',
+        read_only=True
     )
     original_image_url = serializers.ImageField(source='original_image', read_only=True)
     result_count = serializers.SerializerMethodField()
@@ -134,7 +103,7 @@ class VisualizationRequestListSerializer(serializers.ModelSerializer):
     class Meta:
         model = VisualizationRequest
         fields = [
-            'id', 'user_name', 'original_image_url', 'screen_type_name',
+            'id', 'user_name', 'original_image_url', 'screen_type', 'screen_type_display',
             'status', 'created_at', 'updated_at', 'result_count',
             'processing_duration', 'error_message', 'progress_percentage', 'status_message',
             'latest_result_url'
@@ -168,7 +137,7 @@ class VisualizationRequestDetailSerializer(serializers.ModelSerializer):
     """Comprehensive serializer for creating and viewing request details."""
 
     # Read-only fields for response
-    screen_type_details = ScreenTypeSerializer(source='screen_type', read_only=True)
+    screen_type_display = serializers.CharField(source='get_screen_type_display', read_only=True)
     results = GeneratedImageSerializer(many=True, read_only=True)
     original_image_url = serializers.ImageField(source='original_image', read_only=True)
     clean_image_url = serializers.ImageField(source='clean_image', read_only=True)
@@ -176,28 +145,28 @@ class VisualizationRequestDetailSerializer(serializers.ModelSerializer):
     processing_duration = serializers.SerializerMethodField()
 
     # Write-only fields for creation/update
-    screen_type = serializers.PrimaryKeyRelatedField(
-        queryset=ScreenType.objects.filter(is_active=True),
-        write_only=True,
-        allow_null=True,
+    screen_type = serializers.ChoiceField(
+        choices=VisualizationRequest.SCREEN_TYPE_CHOICES,
         required=False,
-        help_text="ID of the screen type to apply"
+        allow_null=True,
+        help_text="Type of screen to apply"
     )
 
     class Meta:
         model = VisualizationRequest
         fields = [
             # Read-only response fields
-            'id', 'user', 'original_image_url', 'clean_image_url', 'screen_type_details',
+            'id', 'user', 'original_image_url', 'clean_image_url', 'screen_type_display',
             'status', 'created_at', 'updated_at', 'task_id', 'results',
             'processing_started_at', 'processing_completed_at', 'processing_duration',
             'error_message', 'progress_percentage', 'status_message',
             # Write-only fields for creation
-            'original_image', 'screen_type', 'opacity', 'color'
+            'original_image', 'screen_type', 'opacity', 'color',
+            'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color'
         ]
         read_only_fields = [
             'id', 'user', 'status', 'created_at', 'updated_at', 'task_id',
-            'results', 'original_image_url', 'clean_image_url', 'screen_type_details',
+            'results', 'original_image_url', 'clean_image_url', 'screen_type_display',
             'processing_started_at', 'processing_completed_at', 'error_message',
             'progress_percentage', 'status_message'
         ]
@@ -257,11 +226,7 @@ class VisualizationRequestDetailSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_screen_type(self, value):
-        """Validate screen type selection."""
-        if value and not value.is_active:
-            raise ValidationError("Selected screen type is not available.")
-        return value
+
 
     def validate(self, attrs):
         """Perform cross-field validation."""
@@ -291,7 +256,9 @@ class VisualizationRequestCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VisualizationRequest
-        fields = ['id', 'original_image', 'screen_type', 'opacity', 'color', 'status', 'progress_percentage', 'status_message', 'created_at']
+        fields = ['id', 'original_image', 'screen_type', 'opacity', 'color', 
+                  'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color',
+                  'status', 'progress_percentage', 'status_message', 'created_at']
         read_only_fields = ['id', 'status', 'progress_percentage', 'status_message', 'created_at']
         extra_kwargs = {
             'original_image': {'required': True},
@@ -304,8 +271,4 @@ class VisualizationRequestCreateSerializer(serializers.ModelSerializer):
         detail_serializer = VisualizationRequestDetailSerializer()
         return detail_serializer.validate_original_image(value)
 
-    def validate_screen_type(self, value):
-        """Validate screen type selection."""
-        if value and not value.is_active:
-            raise ValidationError("Selected screen type is not available.")
-        return value
+

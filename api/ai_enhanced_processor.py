@@ -102,7 +102,8 @@ class AIEnhancedImageProcessor:
             # Extract style preferences
             style_preferences = {
                 "opacity": visualization_request.opacity,
-                "color": visualization_request.color
+                "color": visualization_request.frame_color,
+                "mesh_type": visualization_request.mesh_choice
             }
 
             result = generation_service.generate_screen_visualization(

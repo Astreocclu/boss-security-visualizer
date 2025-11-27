@@ -9,31 +9,30 @@ const ScreenSelector = ({ onSelect, selectedScreenTypeId }) => {
   // Fetch screen types when component mounts
   useEffect(() => {
     const fetchScreenTypes = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getScreenTypes();
-        // Handle paginated response (DRF returns { results: [...] }) or flat array
-        const data = response.results || response;
-        setScreenTypes(data);
-        setError(null);
+      setIsLoading(true);
+      // Hardcoded list to ensure dropdown is populated immediately
+      // Hardcoded list of Mesh Types as requested by user
+      const data = [
+        { id: '10x10', name: '10x10 Heavy Duty', description: 'Maximum Privacy & Strength' },
+        { id: '12x12', name: '12x12 Standard', description: 'Balanced Visibility & Security' },
+        { id: '12x12_american', name: '12x12 American Standard', description: 'High-Tensile Weave' },
+      ];
 
-        // If no screen type is selected and we have screen types, select the first one
-        if (!selectedScreenTypeId && data.length > 0) {
-          onSelect(data[0].id);
-        }
-      } catch (err) {
-        console.error('Error fetching screen types:', err);
-        setError('Failed to load screen types. Please try again later.');
-      } finally {
-        setIsLoading(false);
+      setScreenTypes(data);
+      setError(null);
+
+      // If no screen type is selected and we have screen types, select the first one
+      if (!selectedScreenTypeId && data.length > 0) {
+        onSelect(data[0].id);
       }
+      setIsLoading(false);
     };
 
     fetchScreenTypes();
   }, [onSelect, selectedScreenTypeId]);
 
   const handleChange = (e) => {
-    const screenTypeId = parseInt(e.target.value, 10);
+    const screenTypeId = e.target.value;
     onSelect(screenTypeId);
   };
 

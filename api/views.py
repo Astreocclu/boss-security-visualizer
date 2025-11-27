@@ -10,12 +10,11 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import VisualizationRequest, ScreenType, GeneratedImage, UserProfile
+from .models import VisualizationRequest, GeneratedImage, UserProfile
 from .serializers import (
     VisualizationRequestListSerializer,
     VisualizationRequestDetailSerializer,
     VisualizationRequestCreateSerializer,
-    ScreenTypeSerializer,
     GeneratedImageSerializer,
     UserProfileSerializer
 )
@@ -44,40 +43,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return obj.user == request.user
 
 
-class ScreenTypeViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint for viewing screen types.
-    Supports filtering, searching, and caching.
-    """
-    serializer_class = ScreenTypeSerializer
-    permission_classes = [permissions.AllowAny]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['is_active']
-    search_fields = ['name', 'description']
-    ordering_fields = ['name', 'sort_order', 'created_at']
-    ordering = ['sort_order', 'name']
 
-    def get_queryset(self):
-        """Return active screen types by default."""
-        queryset = ScreenType.objects.all()
-
-        # Filter by active status if not explicitly requested
-        if not self.request.query_params.get('is_active'):
-            queryset = queryset.filter(is_active=True)
-
-        return queryset
-
-    @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
-    def list(self, request, *args, **kwargs):
-        """List screen types with caching."""
-        return super().list(request, *args, **kwargs)
-
-    @action(detail=False, methods=['get'])
-    def active(self, request):
-        """Get only active screen types."""
-        queryset = self.get_queryset().filter(is_active=True)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 class VisualizationRequestViewSet(viewsets.ModelViewSet):
@@ -89,7 +55,7 @@ class VisualizationRequestViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'screen_type']
-    search_fields = ['screen_type__name']
+    search_fields = ['screen_type']
     ordering_fields = ['created_at', 'updated_at', 'status']
     ordering = ['-created_at']
 
@@ -102,9 +68,9 @@ class VisualizationRequestViewSet(viewsets.ModelViewSet):
 
         # Optimize queries based on action
         if self.action == 'list':
-            queryset = queryset.select_related('screen_type', 'user').prefetch_related('results')
+            queryset = queryset.select_related('user').prefetch_related('results')
         elif self.action in ['retrieve', 'update', 'partial_update']:
-            queryset = queryset.select_related('screen_type', 'user').prefetch_related('results')
+            queryset = queryset.select_related('user').prefetch_related('results')
 
         return queryset
 
@@ -220,6 +186,20 @@ class VisualizationRequestViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'])
+    def pdf(self, request, pk=None):
+        """Generate PDF report."""
+        instance = self.get_object()
+        from .utils.pdf_generator import generate_visualization_pdf
+        from django.http import FileResponse
+        
+        try:
+            pdf_buffer = generate_visualization_pdf(instance)
+            return FileResponse(pdf_buffer, as_attachment=True, filename=f"quote_{instance.id}.pdf")
+        except Exception as e:
+            logger.error(f"Error generating PDF: {e}")
+            return Response({'error': 'Failed to generate PDF'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """Get user's request statistics."""
@@ -280,7 +260,7 @@ class GeneratedImageViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         return GeneratedImage.objects.filter(
             request__user=user
-        ).select_related('request', 'request__user', 'request__screen_type')
+        ).select_related('request', 'request__user')
 
     def get_object(self):
         """Get object with permission check."""

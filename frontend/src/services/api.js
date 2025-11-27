@@ -268,10 +268,18 @@ const logoutUser = async () => {
 
 // Screen Type functions
 const fetchScreenTypes = async (params = {}) => {
-  return handleApiCall(
-    () => api.get('/screentypes/', { params }),
-    'Failed to fetch screen types'
-  );
+  // Return static list matching backend SCREEN_TYPE_CHOICES
+  const screenTypes = [
+    { id: 'window_fixed', name: 'Fixed Security Window', description: 'Surface Mount' },
+    { id: 'door_single', name: 'Hinged Security Door', description: 'Single' },
+    { id: 'door_sliding', name: 'Sliding Security Door', description: 'Heavy Duty' },
+    { id: 'door_french', name: 'French Security Doors', description: 'Double' },
+    { id: 'door_accordion', name: 'Accordion/Bi-Fold Security Door', description: 'Stacking' },
+    { id: 'patio_enclosure', name: 'Patio Enclosure', description: 'Stand Alone' },
+  ];
+
+  // Return as a promise to match previous async behavior
+  return Promise.resolve({ results: screenTypes });
 };
 
 const getScreenTypes = fetchScreenTypes; // Backward compatibility

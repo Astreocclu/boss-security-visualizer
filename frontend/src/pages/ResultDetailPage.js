@@ -14,6 +14,7 @@ const ResultDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false); // Magic Flip State
 
   useEffect(() => {
 
@@ -138,51 +139,21 @@ const ResultDetailPage = () => {
       </div>
 
       <div className="comparison-slider-container" ref={sliderRef}>
-        <div
-          className="slider-wrapper"
-          onMouseMove={(e) => {
-            if (!sliderRef.current) return;
-            const rect = sliderRef.current.getBoundingClientRect();
-            const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-            const percentage = (x / rect.width) * 100;
-            sliderRef.current.style.setProperty('--slider-position', `${percentage}%`);
-          }}
-          onTouchMove={(e) => {
-            if (!sliderRef.current) return;
-            const rect = sliderRef.current.getBoundingClientRect();
-            const x = Math.max(0, Math.min(e.touches[0].clientX - rect.left, rect.width));
-            const percentage = (x / rect.width) * 100;
-            sliderRef.current.style.setProperty('--slider-position', `${percentage}%`);
-          }}
-        >
-          <div className="image-layer after-image">
+        {/* Magic Flip Mode */}
+        <div className="magic-flip-container" onClick={() => setShowOriginal(!showOriginal)}>
+          <div className={`image-layer ${showOriginal ? 'visible' : 'hidden'}`}>
+            <img src={request.clean_image_url || request.original_image_url} alt="Original" />
+            <span className="label before-label">Original</span>
+          </div>
+          <div className={`image-layer ${!showOriginal ? 'visible' : 'hidden'}`}>
             {resultImageUrl ? (
               <img src={resultImageUrl} alt="With Screens" />
             ) : (
               <div className="placeholder-image">Processing...</div>
             )}
-            <span className="label after-label">Finalized</span>
+            <span className="label after-label">Boss Security Screen</span>
           </div>
-
-          <div className="image-layer before-image">
-            <img
-              src={request.clean_image_url || request.original_image_url}
-              alt={request.clean_image_url ? "Clean Home" : "Original Home"}
-            />
-            <span className="label before-label">
-              {request.clean_image_url ? 'Clean' : 'Original'}
-            </span>
-          </div>
-
-          <div className="slider-handle">
-            <div className="handle-line"></div>
-            <div className="handle-circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 18l-6-6 6-6" />
-                <path d="M9 18l6-6-6-6" transform="rotate(180 12 12)" />
-              </svg>
-            </div>
-          </div>
+          <div className="flip-instruction">Click to Toggle (Magic Flip)</div>
         </div>
       </div>
 

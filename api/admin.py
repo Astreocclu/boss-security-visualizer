@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import UserProfile, ScreenType, VisualizationRequest, GeneratedImage
+from .models import UserProfile, VisualizationRequest, GeneratedImage
 
 # Basic registration
 admin.site.register(UserProfile)
-admin.site.register(ScreenType)
+
 admin.site.register(VisualizationRequest)
 admin.site.register(GeneratedImage)
 

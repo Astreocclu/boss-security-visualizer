@@ -100,68 +100,7 @@ class UserProfile(models.Model):
         return self.user.visualization_requests.filter(status='complete').count()
 
 
-class ScreenTypeManager(models.Manager):
-    """Custom manager for ScreenType model."""
 
-    def active(self):
-        """Return only active screen types."""
-        return self.filter(is_active=True)
-
-    def get_by_name(self, name):
-        """Get screen type by name (case-insensitive)."""
-        return self.filter(name__iexact=name).first()
-
-
-class ScreenType(models.Model):
-    """Screen type options for visualization."""
-
-    name = models.CharField(
-        max_length=100,
-        unique=True,
-        help_text="Screen type name (e.g., Security, Lifestyle)"
-    )
-    description = models.TextField(
-        blank=True,
-        help_text="Detailed description of the screen type"
-    )
-    is_active = models.BooleanField(
-        default=True,
-        help_text="Whether this screen type is available for selection"
-    )
-    sort_order = models.PositiveIntegerField(
-        default=0,
-        help_text="Order for displaying screen types"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    objects = ScreenTypeManager()
-
-    class Meta:
-        verbose_name = "Screen Type"
-        verbose_name_plural = "Screen Types"
-        ordering = ['sort_order', 'name']
-        indexes = [
-            models.Index(fields=['name']),
-            models.Index(fields=['is_active']),
-        ]
-
-    def __str__(self):
-        return self.name
-
-    def clean(self):
-        """Validate model data."""
-        if self.name:
-            self.name = self.name.strip().title()
-
-    def save(self, *args, **kwargs):
-        """Override save to call clean."""
-        self.clean()
-        super().save(*args, **kwargs)
-
-    def get_request_count(self):
-        """Get number of requests using this screen type."""
-        return self.visualization_requests.count()
 
 
 class VisualizationRequestManager(models.Manager):
@@ -224,27 +163,100 @@ class VisualizationRequest(models.Model):
         blank=True,
         help_text="Intermediate cleaned image (Step 1)"
     )
-    screen_type = models.ForeignKey(
-        ScreenType,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='visualization_requests',
-        help_text="Type of screen to overlay"
+    SCREEN_TYPE_CHOICES = [
+        ('window_fixed', 'Fixed Security Window (Surface Mount)'),
+        ('door_single', 'Hinged Security Door (Single)'),
+        ('door_sliding', 'Sliding Security Door (Heavy Duty)'),
+        ('door_french', 'French Security Doors (Double)'),
+        ('door_accordion', 'Accordion/Bi-Fold Security Door (Stacking)'),
+        ('patio_enclosure', 'Patio Enclosure / Stand Alone'),
+    ]
+
+    MESH_TYPE_CHOICES = [
+        ('10x10', '10x10 Heavy Duty'),
+        ('12x12', '12x12 Standard'),
+        ('12x12_american', '12x12 American Standard'),
+    ]
+
+    SCREEN_CATEGORY_CHOICES = [
+        ('Window', 'Window'),
+        ('Door', 'Door'),
+        ('Patio', 'Patio'),
+    ]
+
+    MESH_CHOICES = [
+        ('10x10', '10x10 Standard'),
+        ('12x12', '12x12 Standard'),
+        ('12x12_american', '12x12 American'),
+    ]
+
+    FRAME_COLOR_CHOICES = [
+        ('Black', 'Black'),
+        ('Dark Bronze', 'Dark Bronze'),
+        ('Stucco', 'Stucco'),
+        ('White', 'White'),
+        ('Almond', 'Almond'),
+    ]
+
+    MESH_COLOR_CHOICES = [
+        ('Black', 'Black (Recommended)'),
+        ('Stucco', 'Stucco'),
+        ('Bronze', 'Bronze'),
+    ]
+
+    screen_categories = models.JSONField(
+        default=list,
+        help_text="Selected screen categories (Window, Door, Patio)"
+    )
+    
+    mesh_choice = models.CharField(
+        max_length=20,
+        choices=MESH_CHOICES,
+        default='12x12',
+        help_text="Selected mesh type"
+    )
+
+    frame_color = models.CharField(
+        max_length=20,
+        choices=FRAME_COLOR_CHOICES,
+        default='Black',
+        help_text="Selected frame color"
+    )
+
+    mesh_color = models.CharField(
+        max_length=20,
+        choices=MESH_COLOR_CHOICES,
+        default='Black',
+        help_text="Selected mesh color"
+    )
+
+    # Legacy fields - kept for compatibility but deprecated
+    screen_type = models.CharField(
+        max_length=20,
+        choices=SCREEN_TYPE_CHOICES,
+        default='window_fixed',
+        help_text="Legacy: Type of screen to overlay"
+    )
+    
+    mesh_type = models.CharField(
+        max_length=20,
+        choices=MESH_TYPE_CHOICES,
+        default='12x12',
+        help_text="Legacy: Type of mesh to use"
     )
     opacity = models.CharField(
         max_length=10,
         choices=[('80', '80%'), ('95', '95%'), ('99', '99%')],
         null=True,
         blank=True,
-        help_text="Screen opacity percentage"
+        help_text="Legacy: Screen opacity percentage"
     )
     color = models.CharField(
         max_length=50,
         choices=[('Black', 'Black'), ('Dark Bronze', 'Dark Bronze'), ('Stucco', 'Stucco')],
         null=True,
         blank=True,
-        help_text="Screen frame/fabric color"
+        help_text="Legacy: Screen frame/fabric color"
     )
     status = models.CharField(
         max_length=20,

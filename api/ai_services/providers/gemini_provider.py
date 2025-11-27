@@ -78,17 +78,15 @@ class GeminiImageGenerationService(AIImageGenerationService):
         Generate screen visualization using ScreenVisualizer pipeline.
         """
         try:
-            # Map screen_type to mesh_type
-            # We now default to lifestyle_environmental for all requests
-            # The actual differentiation is done via opacity
-            mesh_type = "lifestyle_environmental"
-            
             # Extract style preferences
             opacity = None
             color = None
+            mesh_type = "12x12" # Default
+            
             if style_preferences:
                 opacity = style_preferences.get('opacity')
                 color = style_preferences.get('color')
+                mesh_type = style_preferences.get('mesh_type', '12x12')
             
             # If opacity is not provided in style_preferences, try to infer or default
             if not opacity:
@@ -98,9 +96,10 @@ class GeminiImageGenerationService(AIImageGenerationService):
             # Run the pipeline
             clean_image, result_image, quality_score = self.visualizer.process_pipeline(
                 original_image, 
-                mesh_type,
+                screen_type=screen_type,
                 opacity=opacity,
-                color=color
+                color=color,
+                mesh_type=mesh_type
             )
             
             # Convert back to bytes for the result
