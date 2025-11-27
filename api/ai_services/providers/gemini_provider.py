@@ -21,7 +21,7 @@ from ..interfaces import (
     ScreenAnalysisResult,
     QualityAssessmentResult
 )
-from ..screen_visualizer import ScreenVisualizer, ScreenVisualizerError
+from api.visualizer.services import ScreenVisualizer, ScreenVisualizerError
 
 logger = logging.getLogger(__name__)
 

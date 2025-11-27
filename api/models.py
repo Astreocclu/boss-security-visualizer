@@ -40,7 +40,14 @@ def upload_to_generated(instance, filename):
     """Generate upload path for generated images."""
     ext = filename.split('.')[-1]
     filename = f"{uuid.uuid4()}.{ext}"
-    return os.path.join('generated', str(instance.request.user.id), filename)
+    
+    # Handle both GeneratedImage (has .request) and VisualizationRequest (has .user)
+    if hasattr(instance, 'request'):
+        user_id = instance.request.user.id
+    else:
+        user_id = instance.user.id
+        
+    return os.path.join('generated', str(user_id), filename)
 
 
 class UserProfileManager(models.Manager):

@@ -18,6 +18,7 @@ router.register(r'visualizations', views.VisualizationRequestViewSet, basename='
 router.register(r'generated-images', views.GeneratedImageViewSet, basename='generatedimage')
 router.register(r'profile', views.UserProfileViewSet, basename='userprofile')
 router.register(r'ai-services', views.AIServiceViewSet, basename='aiservice')
+router.register(r'screentypes', views.ScreenTypeViewSet, basename='screentype')
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

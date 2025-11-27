@@ -123,3 +123,6 @@ media/screen_references/*/*.PNG
 
 # Conversation Exports
 conversation_export_*.md
+
+# Generated PDFs
+*.pdf

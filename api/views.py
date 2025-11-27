@@ -381,3 +381,19 @@ class AIServiceViewSet(viewsets.ViewSet):
 
 
 # TODO: Add authentication views using dj-rest-auth or custom implementation
+
+class ScreenTypeViewSet(viewsets.ViewSet):
+    """
+    API endpoint for listing available screen types.
+    Returns hardcoded choices from VisualizationRequest model.
+    """
+    permission_classes = [permissions.AllowAny]  # Allow public access for now
+
+    def list(self, request):
+        """Return list of available screen types."""
+        choices = VisualizationRequest.SCREEN_TYPE_CHOICES
+        screen_types = [
+            {'id': code, 'name': label, 'description': label}
+            for code, label in choices
+        ]
+        return Response({'results': screen_types})

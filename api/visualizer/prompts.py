@@ -9,7 +9,8 @@ TASK: Cleanse the scene.
 1. Remove any existing window screens, bug screens, or bars.
 2. Ensure the glass is clear and reflective where appropriate.
 3. Remove any visual clutter (dirt, cobwebs) from the window/door frames.
-4. Do NOT alter the architecture of the home. Keep the siding, brick, and trim exactly as is.
+4. CRITICAL: Do NOT alter the architecture of the home. Keep the siding, brick, trim, landscaping, and lighting EXACTLY as is.
+5. CRITICAL: Do NOT generate a new house. You are EDITING the existing image.
 """
 
 def get_mesh_physics(mesh_choice="12x12"):
@@ -66,4 +67,9 @@ def get_screen_insertion_prompt(screen_type, color="Black", opacity="95%", mesh_
     Opacity: {opacity}
     
     {structure}
+
+    CONSTRAINTS:
+    1. CRITICAL: Do NOT generate a new house. You are EDITING the existing image.
+    2. Keep the siding, brick, trim, landscaping, and lighting EXACTLY as is.
+    3. Only change the pixels inside the window/door openings to apply the screen and frame.
     """

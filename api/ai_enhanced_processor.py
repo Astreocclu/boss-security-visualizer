@@ -97,7 +97,7 @@ class AIEnhancedImageProcessor:
             visualization_request.update_progress(30, "Running Screen King Pipeline (Cleanse -> Build -> Install -> Check)...")
             
             # We generate one high-quality variation
-            variation_name = f"{screen_type.name.lower()}_standard"
+            variation_name = f"{screen_type.lower()}_standard"
             
             # Extract style preferences
             style_preferences = {
@@ -106,12 +106,14 @@ class AIEnhancedImageProcessor:
                 "mesh_type": visualization_request.mesh_choice
             }
 
+            logger.info("Calling generation_service.generate_screen_visualization...")
             result = generation_service.generate_screen_visualization(
                 original_image,
-                screen_type.name,
+                screen_type,
                 detection_areas=None, # Handled by Gemini
                 style_preferences=style_preferences
             )
+            logger.info("Returned from generation_service.generate_screen_visualization")
 
             saved_images = []
             if result.success:
@@ -122,15 +124,20 @@ class AIEnhancedImageProcessor:
                 clean_image_data = result.metadata.get('clean_image_data')
                 
                 if clean_image_data:
+                    logger.info("Saving clean image...")
                     # Save clean image to the request
                     clean_filename = f"clean_{visualization_request.id}.jpg"
-                    visualization_request.clean_image.save(
-                        clean_filename,
-                        ContentFile(clean_image_data),
-                        save=True
-                    )
+                    if hasattr(visualization_request, 'clean_image'):
+                        visualization_request.clean_image.save(
+                            clean_filename,
+                            ContentFile(clean_image_data),
+                            save=True
+                        )
+                    else:
+                        logger.warning("VisualizationRequest has no clean_image field")
 
                 if image_data:
+                    logger.info("Saving generated image...")
                     saved_images = self._save_generated_image(
                         image_data, 
                         variation_name, 
@@ -138,6 +145,7 @@ class AIEnhancedImageProcessor:
                         metadata=result.metadata
                     )
                     
+                logger.info("Marking request as complete...")
                 visualization_request.mark_as_complete()
                 logger.info(f"Successfully processed request {visualization_request.id}")
             else:

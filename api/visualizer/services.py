@@ -99,27 +99,21 @@ class ScreenVisualizer:
 
     def process_pipeline(self, user_image: Image.Image, screen_type: str = "window_fixed", opacity: str = "95", color: str = "Black", mesh_type: str = "12x12") -> Tuple[Image.Image, Image.Image, int]:
         """
-        Execute the strict "Boss Security" pipeline using a Stateful Chat Session.
+        Execute the strict "Boss Security" pipeline using Stateless Calls.
         """
         logger.info(f"Starting Boss Security Pipeline with screen_type={screen_type}, mesh_type={mesh_type}")
         
         if not self.client:
             raise ScreenVisualizerError("GenAI client not initialized.")
 
-        # Initialize Chat Session
-        try:
-            chat = self.client.chats.create(model=self.model_name)
-        except Exception as e:
-             raise ScreenVisualizerError(f"Failed to create chat session: {e}")
-
         try:
             # Step 1: The Cleanse
-            clean_img = self.step_1_cleanse(chat, user_image)
+            clean_img = self.step_1_cleanse(user_image)
             self._save_debug_image(clean_img, "1_cleanse")
             
             # Step 2: The Build Out (Conditional)
             if self._analyze_structure(clean_img):
-                build_img = self.step_2_build_out(chat, clean_img)
+                build_img = self.step_2_build_out(clean_img)
                 self._save_debug_image(build_img, "2_build_out")
             else:
                 logger.info("Step 2: Build Out skipped (not required).")
@@ -127,10 +121,10 @@ class ScreenVisualizer:
                 self._save_debug_image(build_img, "2_build_skipped")
             
             # Step 3: The Screen Install
-            # Load reference image based on mesh_type (not screen_type anymore)
+            # Load reference image based on mesh_type
             product_ref = self._get_product_reference(mesh_type)
             
-            final_img = self.step_3_install_screen(chat, build_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type)
+            final_img = self.step_3_install_screen(build_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type)
             self._save_debug_image(final_img, "3_install")
             
             # Step 4: The Check
@@ -143,7 +137,7 @@ class ScreenVisualizer:
             else:
                 logger.warning(f"Step 4: QC Failed (Score: {qc_score}). Retrying Step 3...")
                 
-                final_img_retry = self.step_3_install_screen(chat, final_img, product_ref, screen_type, retry=True, opacity=opacity, color=color, mesh_type=mesh_type)
+                final_img_retry = self.step_3_install_screen(final_img, product_ref, screen_type, retry=True, opacity=opacity, color=color, mesh_type=mesh_type)
                 self._save_debug_image(final_img_retry, "4_final_retry")
                 
                 if self._is_identical(user_image, final_img_retry):
@@ -161,31 +155,29 @@ class ScreenVisualizer:
             logger.error(f"Pipeline failed: {e}")
             raise ScreenVisualizerError(f"Pipeline failed: {e}") from e
 
-    def step_1_cleanse(self, chat: Any, image: Image.Image) -> Image.Image:
+    def step_1_cleanse(self, image: Image.Image) -> Image.Image:
         """
         Step 1: The Intelligent Cleanse.
         """
         logger.info("Step 1: The Cleanse")
-        return self._generate_chat_image(
-            chat=chat,
+        return self._generate_image(
             contents=[image, CLEANUP_SCENE_PROMPT],
             include_thoughts=True
         )
 
-    def step_2_build_out(self, chat: Any, image: Image.Image) -> Image.Image:
+    def step_2_build_out(self, image: Image.Image) -> Image.Image:
         """
         Step 2: The Build Out.
         """
         logger.info("Step 2: The Build Out")
         prompt = "Analyze the previous image. Add structural build-outs (columns/headers) where indicated to support screens. Ensure the new structure matches the house texture."
         
-        return self._generate_chat_image(
-            chat=chat,
-            contents=[prompt],
+        return self._generate_image(
+            contents=[image, prompt],
             include_thoughts=True
         )
 
-    def step_3_install_screen(self, chat: Any, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12") -> Image.Image:
+    def step_3_install_screen(self, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12") -> Image.Image:
         """
         Step 3: The Screen Install.
         """
@@ -197,67 +189,25 @@ class ScreenVisualizer:
         if retry:
             prompt = "The previous installation was not perfect. Please refine the screens. Ensure they are fully covering the openings and the texture is realistic."
 
-        contents = [image, prompt]
+        # Stateless call: We MUST send the image
+        # Order matters: [User Image, Reference Image, Prompt]
+        contents = [image]
         
         # Add reference if available
         if product_ref:
             contents.append(product_ref)
-            contents.append("Reference for Product Hardware")
+            contents.append("Reference Image (Product Hardware)")
+            
+        contents.append(prompt)
 
-        return self._generate_chat_image(
-            chat=chat,
+        return self._generate_image(
             contents=contents,
             include_thoughts=True
         )
 
-    def step_4_quality_check(self, image: Image.Image, mesh_type: str) -> Tuple[bool, int]:
+    def _generate_image(self, contents: list, include_thoughts: bool = False) -> Image.Image:
         """
-        Step 4: The Check (Vision/QC).
-        Uses a fresh, stateless call as it's a critique, not an edit.
-        """
-        logger.info("Step 4: The Check")
-        try:
-            prompt = f"""Analyze this image for the quality of the motorized screen installation.
-            Check against these constraints:
-            1. Is the fabric color consistent with a screen?
-            2. Is the opacity consistent with {mesh_type} screens?
-            3. Are ALL openings screened?
-            4. Is the image clean?
-            5. Are there any structural hallucinations?
-
-            Provide a Quality Score from 0 to 100.
-            Provide a final verdict of PASS or FAIL.
-            
-            Output format:
-            SCORE: [0-100]
-            VERDICT: [PASS/FAIL]
-            """
-            
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=[image, prompt]
-            )
-            
-            result_text = response.text.strip().upper()
-            logger.info(f"QC Result Raw: {result_text}")
-            
-            import re
-            score_match = re.search(r"SCORE:\s*(\d+)", result_text)
-            score = int(score_match.group(1)) if score_match else 0
-            
-            passed = "VERDICT: PASS" in result_text
-            if not passed and "PASS" in result_text and "FAIL" not in result_text:
-                passed = True
-                
-            return passed, score
-            
-        except Exception as e:
-            logger.error(f"QC failed: {e}")
-            return True, 85 
-
-    def _generate_chat_image(self, chat: Any, contents: list, include_thoughts: bool = False) -> Image.Image:
-        """
-        Helper to call chat.send_message and extract image.
+        Helper to call client.models.generate_content and extract image.
         Handles 429 Rate Limits.
         """
         try:
@@ -279,8 +229,9 @@ class ScreenVisualizer:
             max_retries = 4
             for attempt in range(max_retries):
                 try:
-                    response = chat.send_message(
-                        message=contents,
+                    response = self.client.models.generate_content(
+                        model=self.model_name,
+                        contents=contents,
                         config=types.GenerateContentConfig(**config_args)
                     )
                     break
@@ -365,3 +316,47 @@ class ScreenVisualizer:
         except Exception as e:
             logger.error(f"Error checking similarity: {e}")
             return False
+    def step_4_quality_check(self, image: Image.Image, mesh_type: str) -> Tuple[bool, int]:
+        """
+        Step 4: The Check (Vision/QC).
+        Uses a fresh, stateless call as it's a critique, not an edit.
+        """
+        logger.info("Step 4: The Check")
+        try:
+            prompt = f"""Analyze this image for the quality of the motorized screen installation.
+            Check against these constraints:
+            1. Is the fabric color consistent with a screen?
+            2. Is the opacity consistent with {mesh_type} screens?
+            3. Are ALL openings screened?
+            4. Is the image clean?
+            5. Are there any structural hallucinations?
+
+            Provide a Quality Score from 0 to 100.
+            Provide a final verdict of PASS or FAIL.
+            
+            Output format:
+            SCORE: [0-100]
+            VERDICT: [PASS/FAIL]
+            """
+            
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[image, prompt]
+            )
+            
+            result_text = response.text.strip().upper()
+            logger.info(f"QC Result Raw: {result_text}")
+            
+            import re
+            score_match = re.search(r"SCORE:\s*(\d+)", result_text)
+            score = int(score_match.group(1)) if score_match else 0
+            
+            passed = "VERDICT: PASS" in result_text
+            if not passed and "PASS" in result_text and "FAIL" not in result_text:
+                passed = True
+                
+            return passed, score
+            
+        except Exception as e:
+            logger.error(f"QC failed: {e}")
+            return True, 85
