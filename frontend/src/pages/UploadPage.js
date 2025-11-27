@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { createVisualizationRequest } from '../services/api';
-import Step1Categories from '../components/UploadWizard/Step1Categories';
-import Step2Mesh from '../components/UploadWizard/Step2Mesh';
-import Step3Customization from '../components/UploadWizard/Step3Customization';
+import useVisualizationStore from '../store/visualizationStore';
 import Step4Upload from '../components/UploadWizard/Step4Upload';
+import Step2Scope from '../components/UploadWizard/Step2Scope';
+import Step3Customization from '../components/UploadWizard/Step3Customization';
 import Step5Review from '../components/UploadWizard/Step5Review';
 import './UploadPage.css';
 
 const UploadPage = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    categories: [],
     meshChoice: '12x12',
     frameColor: 'Black',
     meshColor: 'Black',
@@ -21,6 +20,7 @@ const UploadPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { scope } = useVisualizationStore();
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
@@ -30,7 +30,8 @@ const UploadPage = () => {
     setError(null);
     try {
       const data = new FormData();
-      data.append('screen_categories', JSON.stringify(formData.categories));
+      // Include scope data
+      data.append('scope', JSON.stringify(scope));
       data.append('mesh_choice', formData.meshChoice);
       data.append('frame_color', formData.frameColor);
       data.append('mesh_color', formData.meshColor);
@@ -56,11 +57,11 @@ const UploadPage = () => {
         <div className="progress-track">
           <div
             className="progress-fill"
-            style={{ width: `${((step - 1) / 4) * 100}%` }}
+            style={{ width: `${((step - 1) / 3) * 100}%` }}
           />
         </div>
         <div className="steps-indicator">
-          {[1, 2, 3, 4, 5].map(s => (
+          {[1, 2, 3, 4].map(s => (
             <div
               key={s}
               className={`step-dot ${s <= step ? 'active' : ''} ${s === step ? 'current' : ''}`}
@@ -72,16 +73,15 @@ const UploadPage = () => {
       </div>
 
       {step === 1 && (
-        <Step1Categories
+        <Step4Upload
           formData={formData}
           setFormData={setFormData}
           nextStep={nextStep}
+          prevStep={prevStep}
         />
       )}
       {step === 2 && (
-        <Step2Mesh
-          formData={formData}
-          setFormData={setFormData}
+        <Step2Scope
           nextStep={nextStep}
           prevStep={prevStep}
         />
@@ -95,16 +95,9 @@ const UploadPage = () => {
         />
       )}
       {step === 4 && (
-        <Step4Upload
-          formData={formData}
-          setFormData={setFormData}
-          nextStep={nextStep}
-          prevStep={prevStep}
-        />
-      )}
-      {step === 5 && (
         <Step5Review
           formData={formData}
+          scope={scope}
           prevStep={prevStep}
           handleSubmit={handleSubmit}
           isSubmitting={isSubmitting}

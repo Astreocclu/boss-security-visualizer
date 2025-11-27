@@ -111,12 +111,19 @@ class AIEnhancedImageProcessor:
             # We generate one high-quality variation
             variation_name = f"{screen_type.lower()}_standard"
             
-            # Extract style preferences
+            
+            # Extract style preferences and scope
             style_preferences = {
                 "opacity": visualization_request.opacity,
                 "color": visualization_request.frame_color,
-                "mesh_type": visualization_request.mesh_choice
+                "mesh_type": visualization_request.mesh_choice,
+                "scope": {} # Default empty scope
             }
+            
+            # Extract scope if available (new field)
+            if hasattr(visualization_request, 'scope') and visualization_request.scope:
+                style_preferences["scope"] = visualization_request.scope
+                logger.info(f"Using scope from request: {visualization_request.scope}")
 
             logger.info("Calling generation_service.generate_screen_visualization...")
             result = generation_service.generate_screen_visualization(
@@ -126,6 +133,7 @@ class AIEnhancedImageProcessor:
                 style_preferences=style_preferences
             )
             logger.info("Returned from generation_service.generate_screen_visualization")
+
 
             saved_images = []
             if result.success:

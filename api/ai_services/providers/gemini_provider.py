@@ -96,7 +96,8 @@ class GeminiImageGenerationService(AIImageGenerationService):
                 screen_type=screen_type,
                 opacity=opacity,
                 color=color,
-                mesh_type=mesh_type
+                mesh_type=mesh_type,
+                style_preferences=style_preferences or {}
             )
             
             # Convert back to bytes for the result

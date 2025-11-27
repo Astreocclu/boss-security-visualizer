@@ -1,7 +1,19 @@
 import React from 'react';
 import { ArrowLeft, Shield } from 'lucide-react';
 
-const Step5Review = ({ formData, prevStep, handleSubmit, isSubmitting, error }) => {
+const Step5Review = ({ formData, scope, prevStep, handleSubmit, isSubmitting, error }) => {
+    // Build scope summary
+    const scopeParts = [];
+    if (scope?.hasPatio) scopeParts.push('Patio');
+    if (scope?.hasWindows) scopeParts.push('Windows');
+    if (scope?.hasDoors) {
+        const doorTypeLabel = scope.doorType === 'french_door' ? 'French Doors' :
+            scope.doorType === 'sliding_door' ? 'Sliding Door' :
+                'Security Door';
+        scopeParts.push(`Doors (${doorTypeLabel})`);
+    }
+    const scopeSummary = scopeParts.length > 0 ? scopeParts.join(' + ') : 'None selected';
+
     return (
         <div className="wizard-step fade-in">
             <div className="step-header">
@@ -11,8 +23,8 @@ const Step5Review = ({ formData, prevStep, handleSubmit, isSubmitting, error }) 
 
             <div className="review-card">
                 <div className="review-item">
-                    <span className="label">Categories</span>
-                    <span className="value">{formData.categories.join(', ')}</span>
+                    <span className="label">Scope</span>
+                    <span className="value">{scopeSummary}</span>
                 </div>
                 <div className="review-item">
                     <span className="label">Mesh Type</span>

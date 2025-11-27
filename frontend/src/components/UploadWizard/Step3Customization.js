@@ -1,9 +1,13 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Award } from 'lucide-react';
 
 const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
     const handleColorSelect = (type, color) => {
         setFormData(prev => ({ ...prev, [type]: color }));
+    };
+
+    const handleMeshSelect = (mesh) => {
+        setFormData(prev => ({ ...prev, meshChoice: mesh }));
     };
 
     return (
@@ -11,6 +15,34 @@ const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
             <div className="step-header">
                 <h2>Customize Your Look</h2>
                 <p className="step-subtitle">Match your home's aesthetic</p>
+            </div>
+
+            {/* Mesh Selection */}
+            <div className="customization-section">
+                <h3>Mesh Type</h3>
+                <div className="mesh-options">
+                    {[
+                        { id: '12x12', label: '12x12 Standard', desc: 'Industry standard security mesh' },
+                        { id: '12x12_american', label: '12x12 American (Premium)', desc: 'Marine-grade stainless steel', badge: 'Best Value' },
+                        { id: '10x10', label: '10x10 Heavy Duty', desc: 'Maximum security' }
+                    ].map(mesh => (
+                        <div
+                            key={mesh.id}
+                            className={`mesh-card ${formData.meshChoice === mesh.id ? 'selected' : ''}`}
+                            onClick={() => handleMeshSelect(mesh.id)}
+                        >
+                            <div className="mesh-card-header">
+                                <h4>{mesh.label}</h4>
+                                {mesh.badge && (
+                                    <span className="mesh-badge">
+                                        <Award size={14} /> {mesh.badge}
+                                    </span>
+                                )}
+                            </div>
+                            <p className="mesh-desc">{mesh.desc}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div className="customization-section">

@@ -237,6 +237,12 @@ class VisualizationRequest(models.Model):
         help_text="Selected mesh color"
     )
 
+    scope = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Sales scope (hasPatio, hasWindows, hasDoors, doorType)"
+    )
+
     # Legacy fields - kept for compatibility but deprecated
     screen_type = models.CharField(
         max_length=20,

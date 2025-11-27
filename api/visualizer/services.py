@@ -25,9 +25,9 @@ from django.conf import settings
 
 from .prompts import (
     CLEANUP_SCENE_PROMPT,
-    get_screen_insertion_prompt,
-    get_structural_prompt
+    PromptFactory
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class ScreenVisualizer:
             logger.critical(f"CRITICAL: Failed to load product reference for {mesh_type}: {e}")
             return Image.new('RGB', (100, 100), color=(30, 30, 30))
 
-    def process_pipeline(self, user_image: Image.Image, screen_type: str = "window_fixed", opacity: str = "95", color: str = "Black", mesh_type: str = "12x12") -> Tuple[Image.Image, Image.Image, int]:
+    def process_pipeline(self, user_image: Image.Image, screen_type: str = "window_fixed", opacity: str = "95", color: str = "Black", mesh_type: str = "12x12", style_preferences: Optional[Dict[str, Any]] = None) -> Tuple[Image.Image, Image.Image, int]:
         """
         Execute the strict "Boss Security" pipeline using Stateless Calls.
         """
@@ -118,7 +118,7 @@ class ScreenVisualizer:
             # Load reference image based on mesh_type
             product_ref = self._get_product_reference(mesh_type)
             
-            final_img = self.step_3_install_screen(clean_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type, is_wide_span=is_wide_span)
+            final_img = self.step_3_install_screen(clean_img, product_ref, screen_type, opacity=opacity, color=color, mesh_type=mesh_type, is_wide_span=is_wide_span, style_preferences=style_preferences or {})
             self._save_debug_image(final_img, "3_install")
             
             # Step 4: The Check
@@ -131,7 +131,7 @@ class ScreenVisualizer:
             else:
                 logger.warning(f"Step 4: QC Failed (Score: {qc_score}). Retrying Step 3...")
                 
-                final_img_retry = self.step_3_install_screen(final_img, product_ref, screen_type, retry=True, opacity=opacity, color=color, mesh_type=mesh_type, is_wide_span=is_wide_span)
+                final_img_retry = self.step_3_install_screen(final_img, product_ref, screen_type, retry=True, opacity=opacity, color=color, mesh_type=mesh_type, is_wide_span=is_wide_span, style_preferences=style_preferences or {})
                 self._save_debug_image(final_img_retry, "4_final_retry")
                 
                 if self._is_identical(user_image, final_img_retry):
@@ -207,14 +207,42 @@ class ScreenVisualizer:
             logger.error(f"Structure analysis failed: {e}")
             return False
 
-    def step_3_install_screen(self, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12", is_wide_span: bool = False) -> Image.Image:
+    def step_3_install_screen(self, image: Image.Image, product_ref: Optional[Image.Image], screen_type: str, retry: bool = False, opacity: str = "95%", color: str = "Black", mesh_type: str = "12x12", is_wide_span: bool = False, style_preferences: Optional[Dict[str, Any]] = None) -> Image.Image:
         """
         Step 3: The Screen Install.
         """
         logger.info(f"Step 3: The Screen Install (Type={screen_type}, Mesh={mesh_type}, Retry={retry}, Opacity={opacity}, Color={color}, WideSpan={is_wide_span})")
         
-        # Use the centralized prompt generator
-        prompt = get_screen_insertion_prompt(screen_type, is_wide_span, color, opacity, mesh_type)
+        style_preferences = style_preferences or {}
+        
+        # Build options for PromptFactory
+        options = {
+            'scope': style_preferences.get('scope', {}),
+            'mesh_choice': mesh_type,
+            'frame_color': color
+        }
+        
+        # Use PromptFactory for scope-aware prompts
+        if options['scope']:
+            prompt = PromptFactory.build_prompt(options)
+            logger.info(f"Using PromptFactory with scope: {options['scope']}")
+        else:
+            # Fallback to legacy for backward compatibility
+            prompt = f"""
+            TASK: Photorealistic architectural visualization of Boss Security Screens.
+            {CLEANUP_SCENE_PROMPT}
+            
+            INSTALLATION:
+            - Screen Type: {screen_type}
+            - Frame Color: {color}
+            - Mesh: {PromptFactory.get_mesh_physics(mesh_type)}
+            - Opacity: {opacity}
+            
+            CONSTRAINTS:
+            - Do NOT alter the house architecture.
+            - Only modify the window/door openings to install the screens.
+            """
+            logger.info(f"Using legacy prompt for screen_type: {screen_type}")
         
         # Add strict constraint against architectural changes
         prompt += " Do not alter the house architecture. Only apply the screen texture to existing openings."
