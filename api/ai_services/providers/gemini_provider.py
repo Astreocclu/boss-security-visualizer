@@ -57,7 +57,8 @@ class GeminiImageGenerationService(AIImageGenerationService):
 
     def __init__(self, config: AIServiceConfig):
         super().__init__(config)
-        self.visualizer = ScreenVisualizer(api_key=config.api_key)
+        api_key = config.api_key or os.environ.get("GOOGLE_API_KEY")
+        self.visualizer = ScreenVisualizer(api_key=api_key)
 
     def _validate_config(self) -> None:
         if not self.config.api_key and not os.environ.get("GOOGLE_API_KEY"):

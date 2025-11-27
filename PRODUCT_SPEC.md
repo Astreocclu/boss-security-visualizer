@@ -17,7 +17,7 @@ The core value proposition is the high-fidelity AI processing pipeline, which fo
 
 ### Step 1: The Cleanse (Image Restoration)
 *   **Goal**: Prepare the canvas.
-*   **Action**: Remove visual clutter (hoses, trash, debris). **Remove people and furniture.** Fix lighting/shadows.
+*   **Action**: Remove visual clutter (hoses, trash, debris). **Remove people, animals, and furniture.** Fix lighting/shadows.
 *   **Constraint**: Do NOT change the house structure, camera angle, or canvas size.
 
 ### Step 2: Frame the Image (Structural Build-Out)

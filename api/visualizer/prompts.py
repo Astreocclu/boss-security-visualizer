@@ -7,10 +7,11 @@ Contains the "Narrative Vibe" prompts and structural definitions.
 CLEANUP_SCENE_PROMPT = """
 TASK: Cleanse the scene.
 1. Remove any existing window screens, bug screens, or bars.
-2. Ensure the glass is clear and reflective where appropriate.
-3. Remove any visual clutter (dirt, cobwebs) from the window/door frames.
-4. CRITICAL: Do NOT alter the architecture of the home. Keep the siding, brick, trim, landscaping, and lighting EXACTLY as is.
-5. CRITICAL: Do NOT generate a new house. You are EDITING the existing image.
+2. Remove ALL living things from the scene, including people, pets, and wildlife.
+3. Ensure the glass is clear and reflective where appropriate.
+4. Remove any visual clutter (dirt, cobwebs, hoses, trash) from the window/door frames and patio areas.
+5. CRITICAL: Do NOT alter the architecture of the home. Keep the siding, brick, trim, landscaping, and lighting EXACTLY as is.
+6. CRITICAL: Do NOT generate a new house. You are EDITING the existing image.
 """
 
 def get_mesh_physics(mesh_choice="12x12"):

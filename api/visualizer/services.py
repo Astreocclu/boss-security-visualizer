@@ -56,8 +56,8 @@ class ScreenVisualizer:
         elif self.api_key:
             self.client = genai.Client(api_key=self.api_key)
         else:
-            logger.warning("GOOGLE_API_KEY not found. ScreenVisualizer will not function correctly.")
-            self.client = None
+            logger.error("GOOGLE_API_KEY not found. ScreenVisualizer cannot function.")
+            raise ScreenVisualizerError("API Key missing. Please set GOOGLE_API_KEY.")
         
         self.model_name = "gemini-3-pro-image-preview"
         self.reference_images = {} # Loaded on demand now
@@ -284,12 +284,8 @@ class ScreenVisualizer:
                         from io import BytesIO
                         return Image.open(BytesIO(part.inline_data.data))
             
-            logger.warning("No image data found in response.")
-            # Fallback: return the input image if it's in contents
-            for content in contents:
-                if isinstance(content, Image.Image):
-                    return content
-            return Image.new('RGB', (512, 512), color='gray')
+            logger.error("No image data found in response.")
+            raise ScreenVisualizerError("No image data returned from AI service.")
             
         except ScreenVisualizerError:
             raise
@@ -374,4 +370,8 @@ class ScreenVisualizer:
             
         except Exception as e:
             logger.error(f"QC failed: {e}")
-            return True, 85
+            # If QC fails to run, we shouldn't blindly pass.
+            # But we also don't want to block if it's just a transient error.
+            # For now, let's return False to be safe, or maybe True with a warning?
+            # Instructions say "Strict Validation".
+            return False, 0
