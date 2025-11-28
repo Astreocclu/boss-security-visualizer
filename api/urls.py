@@ -11,6 +11,8 @@ from .auth_views import (
     update_profile
 )
 
+from .audit.views import AuditViewSet
+
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
 
@@ -19,6 +21,7 @@ router.register(r'generated-images', views.GeneratedImageViewSet, basename='gene
 router.register(r'profile', views.UserProfileViewSet, basename='userprofile')
 router.register(r'ai-services', views.AIServiceViewSet, basename='aiservice')
 router.register(r'screentypes', views.ScreenTypeViewSet, basename='screentype')
+router.register(r'audit', AuditViewSet, basename='audit')
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

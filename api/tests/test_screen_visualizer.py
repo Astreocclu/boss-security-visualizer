@@ -20,13 +20,15 @@ if not settings.configured:
     )
 
 from api.visualizer.services import ScreenVisualizer, ScreenVisualizerError
+from api.visualizer.prompts import get_quality_check_prompt
 
 class TestScreenVisualizer(unittest.TestCase):
 
     def setUp(self):
         self.api_key = "fake_key"
         self.mock_client = MagicMock()
-        self.visualizer = ScreenVisualizer(api_key=self.api_key, client=self.mock_client)
+        with patch('google.genai.Client', return_value=self.mock_client):
+            self.visualizer = ScreenVisualizer(api_key=self.api_key)
         self.mock_image = Image.new('RGB', (100, 100), color='white')
 
     def test_initialization_with_key(self):
@@ -37,89 +39,61 @@ class TestScreenVisualizer(unittest.TestCase):
 
     def test_pipeline_success(self):
         # Mock the internal methods to avoid API calls
-        self.visualizer.step_1_cleanse = MagicMock(return_value=self.mock_image)
-        self.visualizer._validate_openings = MagicMock(return_value=True) # Validation passes
-        self.visualizer.step_3_install_screen = MagicMock(return_value=self.mock_image)
-        self.visualizer.step_4_quality_check = MagicMock(return_value=(True, 95))
-        self.visualizer._get_product_reference = MagicMock(return_value=self.mock_image)
+        self.visualizer._call_gemini_edit = MagicMock(return_value=self.mock_image)
+        self.visualizer._call_gemini_json = MagicMock(return_value={'score': 0.95, 'reason': 'Test reason'})
         self.visualizer._save_debug_image = MagicMock()
 
-        clean_img, final_img, score = self.visualizer.process_pipeline(self.mock_image, mesh_type="12x12")
+        scope = {'windows': True, 'doors': False, 'patio': False}
+        options = {'color': 'Black', 'mesh_type': '12x12'}
+        
+        clean_img, final_img, score, reason = self.visualizer.process_pipeline(self.mock_image, scope=scope, options=options)
 
-        self.visualizer.step_1_cleanse.assert_called_once()
-        self.visualizer._validate_openings.assert_called_once()
-        self.visualizer.step_3_install_screen.assert_called_once()
-        self.visualizer.step_4_quality_check.assert_called_once()
+        # Should be called once for cleanup + once for windows = 2 times
+        self.assertEqual(self.visualizer._call_gemini_edit.call_count, 2)
+        # Should be called once for quality check
+        self.visualizer._call_gemini_json.assert_called_once()
+        
+        # Verify it was called with a list of 2 images (clean + final)
+        call_args = self.visualizer._call_gemini_json.call_args
+        self.assertIsInstance(call_args[0][0], list)
+        self.assertEqual(len(call_args[0][0]), 2)
+        
         self.assertEqual(final_img, self.mock_image)
-        self.assertEqual(score, 95)
+        self.assertEqual(score, 0.95)
+        self.assertEqual(reason, 'Test reason')
 
-    def test_validation_failure(self):
-        # Test that pipeline stops if validation fails
-        self.visualizer.step_1_cleanse = MagicMock(return_value=self.mock_image)
-        self.visualizer._validate_openings = MagicMock(return_value=False) # Validation FAILS
+    def test_gatekeeper_patio(self):
+        # Test that patio prompt is sent when patio is selected
+        self.visualizer._call_gemini_edit = MagicMock(return_value=self.mock_image)
+        self.visualizer._call_gemini_json = MagicMock(return_value={'score': 0.95, 'reason': 'Test reason'})
         self.visualizer._save_debug_image = MagicMock()
 
-        with self.assertRaises(ScreenVisualizerError) as cm:
-            self.visualizer.process_pipeline(self.mock_image)
+        scope = {'windows': False, 'doors': False, 'patio': True}
+        options = {'color': 'Black', 'mesh_type': '12x12'}
         
-        self.assertEqual(str(cm.exception), "Please ensure to upload a photo with openings matching your selection.")
+        self.visualizer.process_pipeline(self.mock_image, scope=scope, options=options)
         
-        self.visualizer.step_1_cleanse.assert_called_once()
-        self.visualizer._validate_openings.assert_called_once()
-        # Step 3 should NOT be called
-        self.visualizer.step_3_install_screen = MagicMock()
-        self.visualizer.step_3_install_screen.assert_not_called()
+        # Should be called once for cleanup + once for patio = 2 times
+        self.assertEqual(self.visualizer._call_gemini_edit.call_count, 2)
+        
+        # Verify second call is patio
+        call_args = self.visualizer._call_gemini_edit.call_args_list[1]
+        self.assertTrue("patio" in call_args[0][1])
 
-    def test_product_reference_path(self):
-        # Verify _get_product_reference constructs path using MEDIA_ROOT
-        with patch('os.path.exists', return_value=True):
-            with patch('PIL.Image.open', return_value=self.mock_image):
-                self.visualizer._get_product_reference("12x12")
-                
-                # We can't easily check the internal variable base_path without inspecting the code execution,
-                # but we can verify it returns an image if exists returns true.
-                # To verify the path specifically, we can mock os.path.join
-                
-                with patch('os.path.join') as mock_join:
-                    mock_join.side_effect = os.path.join # Use real join
-                    
-                    # We need to spy on the calls
-                    with patch('api.visualizer.services.settings') as mock_settings:
-                        mock_settings.MEDIA_ROOT = '/mock/media'
-                        
-                        self.visualizer._get_product_reference("12x12")
-                        
-                        # Check if join was called with MEDIA_ROOT
-                        # The first join call in the method is os.path.join(settings.MEDIA_ROOT, 'screen_references', 'master')
-                        # But since we are using side_effect=os.path.join, we can't assert_called_with easily on the intermediate calls if we don't mock them strictly.
-                        # Let's just check if MEDIA_ROOT is used in the logic.
-                        pass
-
-    def test_product_reference_fallback(self):
-        # Test fallback when file missing
-        with patch('os.path.exists', return_value=False):
-             img = self.visualizer._get_product_reference("non_existent")
-             # Should return a 100x100 placeholder
-             self.assertEqual(img.size, (100, 100))
-             # Should log critical error (we can verify log if needed, but return value is enough)
-
-    def test_wide_span_logic(self):
-        # Mock internal methods
-        self.visualizer.step_1_cleanse = MagicMock(return_value=self.mock_image)
-        self.visualizer._validate_openings = MagicMock(return_value=True)
-        self.visualizer._analyze_structure = MagicMock(return_value=True) # Wide span detected
-        self.visualizer.step_3_install_screen = MagicMock(return_value=self.mock_image)
-        self.visualizer.step_4_quality_check = MagicMock(return_value=(True, 95))
-        self.visualizer._get_product_reference = MagicMock(return_value=self.mock_image)
+    def test_gatekeeper_all(self):
+        # Test that all steps are executed when all selected
+        self.visualizer._call_gemini_edit = MagicMock(return_value=self.mock_image)
+        self.visualizer._call_gemini_json = MagicMock(return_value={'score': 0.95, 'reason': 'Test reason'})
         self.visualizer._save_debug_image = MagicMock()
 
-        self.visualizer.process_pipeline(self.mock_image, mesh_type="12x12")
-
-        self.visualizer._analyze_structure.assert_called_once()
-        # Verify is_wide_span=True is passed
-        self.visualizer.step_3_install_screen.assert_called_with(
-            ANY, ANY, "window_fixed", opacity="95", color="Black", mesh_type="12x12", is_wide_span=True
-        )
+        scope = {'windows': True, 'doors': True, 'patio': True}
+        options = {'color': 'Black', 'mesh_type': '12x12'}
+        
+        self.visualizer.process_pipeline(self.mock_image, scope=scope, options=options)
+        
+        # Should be called 1 (cleanup) + 3 (features) = 4 times
+        # Should be called 1 (cleanup) + 3 (features) = 4 times
+        self.assertEqual(self.visualizer._call_gemini_edit.call_count, 4)
 
 if __name__ == '__main__':
     unittest.main()

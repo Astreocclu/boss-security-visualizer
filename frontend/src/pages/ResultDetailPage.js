@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { getVisualizationRequestById, regenerateVisualizationRequest } from '../services/api';
+import {
+  getVisualizationRequestById,
+  regenerateVisualizationRequest,
+  generateAudit,
+  getAuditReport
+} from '../services/api';
 import './ResultDetailPage.css';
 
 import Skeleton from '../components/Common/Skeleton';
+import AuditResults from '../features/audit/AuditResults';
 
 const ResultDetailPage = () => {
   const { id } = useParams();
@@ -11,14 +17,13 @@ const ResultDetailPage = () => {
   const sliderRef = React.useRef(null);
 
   const [request, setRequest] = useState(null);
+  const [auditReport, setAuditReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false); // Magic Flip State
 
   useEffect(() => {
-
-
     const fetchRequestDetails = async () => {
       try {
         const data = await getVisualizationRequestById(id);
@@ -28,6 +33,12 @@ const ResultDetailPage = () => {
         if (data.status === 'complete' || data.status === 'failed') {
           setIsLoading(false);
           setIsRegenerating(false);
+
+          // Trigger or fetch audit if complete
+          if (data.status === 'complete') {
+            fetchAudit(id);
+          }
+
           return true; // Stop polling
         }
       } catch (err) {
@@ -61,6 +72,24 @@ const ResultDetailPage = () => {
       if (pollInterval) clearInterval(pollInterval);
     };
   }, [id, isRegenerating]);
+
+  const fetchAudit = async (requestId) => {
+    try {
+      // Try to get existing report
+      const report = await getAuditReport(requestId);
+      setAuditReport(report);
+    } catch (err) {
+      // If not found, generate it
+      if (err.status === 404) {
+        try {
+          const newReport = await generateAudit(requestId);
+          setAuditReport(newReport);
+        } catch (genErr) {
+          console.error("Failed to generate audit:", genErr);
+        }
+      }
+    }
+  };
 
   const handleRegenerate = async () => {
     try {
@@ -158,15 +187,27 @@ const ResultDetailPage = () => {
       </div>
 
       {request.status === 'complete' && (
-        <div className="quality-score-section">
-          <div className={`score-circle ${getScoreColorClass(qualityScore)}`}>
-            <span className="score-value">{qualityScore}</span>
+        <>
+          <div className="quality-score-section">
+            <div className={`score-circle ${getScoreColorClass(Math.round(qualityScore * 100))}`}>
+              <span className="score-value">{Math.round(qualityScore * 100)}%</span>
+            </div>
+            <div className="score-label">AI Quality Score</div>
+
+            {resultImage?.metadata?.quality_reason && (
+              <div className="quality-reason">
+                <strong>AI Analysis:</strong> {resultImage.metadata.quality_reason}
+              </div>
+            )}
+
+            <p className="text-muted mt-2">
+              Based on AI analysis of realism, installation accuracy, and image clarity.
+            </p>
           </div>
-          <div className="score-label">Quality Score</div>
-          <p className="text-muted mt-2">
-            Based on AI analysis of realism, installation accuracy, and image clarity.
-          </p>
-        </div>
+
+          {/* New Audit Section */}
+          <AuditResults auditReport={auditReport} />
+        </>
       )}
 
       <div className="action-bar">

@@ -90,14 +90,32 @@ class GeminiImageGenerationService(AIImageGenerationService):
                 # Default to 95 if not specified
                 opacity = "95"
 
+            # Construct options
+            options = {
+                'color': color or "Black",
+                'mesh_type': mesh_type,
+                'opacity': opacity
+            }
+            
+            # Construct scope
+            # If scope is in style_preferences, use it. Otherwise infer from screen_type.
+            scope = style_preferences.get('scope', {})
+            if not scope:
+                # Infer from screen_type (legacy support)
+                scope = {
+                    'windows': 'window' in screen_type.lower(),
+                    'doors': 'door' in screen_type.lower(),
+                    'patio': 'patio' in screen_type.lower()
+                }
+                # If nothing matched, default to windows
+                if not any(scope.values()):
+                    scope['windows'] = True
+
             # Run the pipeline
-            clean_image, result_image, quality_score = self.visualizer.process_pipeline(
+            clean_image, result_image, quality_score, quality_reason = self.visualizer.process_pipeline(
                 original_image, 
-                screen_type=screen_type,
-                opacity=opacity,
-                color=color,
-                mesh_type=mesh_type,
-                style_preferences=style_preferences or {}
+                scope=scope,
+                options=options
             )
             
             # Convert back to bytes for the result
@@ -117,7 +135,8 @@ class GeminiImageGenerationService(AIImageGenerationService):
                 metadata={
                     "generated_image_data": image_data,
                     "clean_image_data": clean_image_data,
-                    "quality_score": quality_score
+                    "quality_score": quality_score,
+                    "quality_reason": quality_reason
                 }
             )
             

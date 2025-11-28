@@ -54,7 +54,7 @@ const initialState = {
   },
   scope: {
     hasPatio: false,
-    hasWindows: false,
+    hasWindows: true,
     hasDoors: false,
     doorType: null
   }

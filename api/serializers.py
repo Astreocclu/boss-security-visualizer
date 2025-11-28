@@ -162,7 +162,7 @@ class VisualizationRequestDetailSerializer(serializers.ModelSerializer):
             'error_message', 'progress_percentage', 'status_message',
             # Write-only fields for creation
             'original_image', 'screen_type', 'opacity', 'color',
-            'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color'
+            'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color', 'scope'
         ]
         read_only_fields = [
             'id', 'user', 'status', 'created_at', 'updated_at', 'task_id',
@@ -257,12 +257,13 @@ class VisualizationRequestCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = VisualizationRequest
         fields = ['id', 'original_image', 'screen_type', 'opacity', 'color', 
-                  'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color',
+                  'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color', 'scope',
                   'status', 'progress_percentage', 'status_message', 'created_at']
         read_only_fields = ['id', 'status', 'progress_percentage', 'status_message', 'created_at']
         extra_kwargs = {
             'original_image': {'required': True},
-            'screen_type': {'required': False, 'allow_null': True}
+            'screen_type': {'required': False, 'allow_null': True},
+            'scope': {'required': False}
         }
 
     def validate_original_image(self, value):

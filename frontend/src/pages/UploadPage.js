@@ -31,7 +31,12 @@ const UploadPage = () => {
     try {
       const data = new FormData();
       // Include scope data
-      data.append('scope', JSON.stringify(scope));
+      const scopePayload = {
+        windows: scope.hasWindows,
+        doors: scope.hasDoors,
+        patio: scope.hasPatio
+      };
+      data.append('scope', JSON.stringify(scopePayload));
       data.append('mesh_choice', formData.meshChoice);
       data.append('frame_color', formData.frameColor);
       data.append('mesh_color', formData.meshColor);
