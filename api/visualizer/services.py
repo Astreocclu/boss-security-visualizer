@@ -30,7 +30,7 @@ class ScreenVisualizer:
         self.client = genai.Client(api_key=self.api_key)
         self.model_name = "gemini-3-pro-image-preview"
 
-    def process_pipeline(self, original_image: Image.Image, scope: dict, options: dict) -> Tuple[Image.Image, Image.Image, float, str]:
+    def process_pipeline(self, original_image: Image.Image, scope: dict, options: dict, progress_callback=None) -> Tuple[Image.Image, Image.Image, float, str]:
         """
         Executes the visualization pipeline sequentially based on user scope.
         
@@ -38,11 +38,18 @@ class ScreenVisualizer:
             original_image (Image): The source image.
             scope (dict): {'windows': bool, 'doors': bool, 'patio': bool}
             options (dict): {'color': str, 'mesh_type': str}
+            progress_callback (callable, optional): Function to update progress (percent, message).
         """
         try:
             current_image = original_image
 
+            if progress_callback:
+                progress_callback(10, "Analyzing")
+
             # --- Step 1: The Foundation (Cleanup) ---
+            if progress_callback:
+                progress_callback(30, "Cleaning")
+                
             # We always clean the image first to remove visual noise.
             cleanup_prompt = get_cleanup_prompt()
             
@@ -51,6 +58,10 @@ class ScreenVisualizer:
             logger.info("Pipeline Step 1: Scene Cleanup complete.")
             
             current_image = clean_image
+
+            # --- Step 2-4: Building (Insertions) ---
+            if progress_callback:
+                progress_callback(50, "Building")
 
             # --- Step 2: Patio (Background Layer) ---
             if scope.get('patio', False):
@@ -74,8 +85,15 @@ class ScreenVisualizer:
                 logger.info("Pipeline Step 4: Doors complete.")
 
             # --- Quality Check ---
+            if progress_callback:
+                progress_callback(80, "Checking light")
+                
             logger.info("Pipeline Step 5: Quality Check")
             quality_prompt = get_quality_check_prompt(scope)
+            
+            if progress_callback:
+                progress_callback(85, "Checking quality")
+
             # Pass both clean (reference) and current (final) images for comparison
             quality_result = self._call_gemini_json([clean_image, current_image], quality_prompt)
             

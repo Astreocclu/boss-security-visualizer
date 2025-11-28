@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import ResultsPage from './pages/ResultsPage';
@@ -16,32 +16,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for existing token on mount
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token && !user) {
-      const storedUser = localStorage.getItem('user_data');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    }
-
-    // Fetch screen types for global use
-    const fetchScreenTypes = async () => {
-      try {
-        const response = await fetch('/api/screentypes/');
-        if (response.ok) {
-          const data = await response.json();
-          setScreenTypes(data.results || []);
-        }
-      } catch (error) {
-        console.error('Error fetching screen types:', error);
-      }
-    };
-    fetchScreenTypes();
-  }, []);
-
-  const handleLogin = async (credentials) => {
+  const handleLogin = useCallback(async (credentials) => {
     setLoading(true);
     setError('');
 
@@ -71,7 +46,35 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token && !user) {
+      const storedUser = localStorage.getItem('user_data');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } else if (!token && !user) {
+      // Auto-login as Guest if no session exists
+      handleLogin({ username: 'Guest' });
+    }
+
+    // Fetch screen types for global use
+    const fetchScreenTypes = async () => {
+      try {
+        const response = await fetch('/api/screentypes/');
+        if (response.ok) {
+          const data = await response.json();
+          setScreenTypes(data.results || []);
+        }
+      } catch (error) {
+        console.error('Error fetching screen types:', error);
+      }
+    };
+    fetchScreenTypes();
+  }, [handleLogin, user]);
 
   const handleLogout = () => {
     setUser(null);

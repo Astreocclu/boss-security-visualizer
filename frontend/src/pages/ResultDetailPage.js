@@ -21,7 +21,7 @@ const ResultDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [showOriginal, setShowOriginal] = useState(false); // Magic Flip State
+  const [showOriginal, setShowOriginal] = useState(true); // Magic Flip State
 
   useEffect(() => {
     const fetchRequestDetails = async () => {
@@ -147,13 +147,55 @@ const ResultDetailPage = () => {
     return 'low';
   };
 
+  // Granular Progress Bar Logic
+  const steps = [
+    { label: 'Analyzing', percent: 10 },
+    { label: 'Cleaning', percent: 30 },
+    { label: 'Building', percent: 50 },
+    { label: 'Checking', percent: 80 } // Shared by Checking light/quality
+  ];
+
+  const currentProgress = request?.progress_percentage || 0;
+  const currentStatusMessage = request?.status_message || '';
+
+  // Determine active step index based on progress or message
+  let activeStepIndex = 0;
+  if (currentProgress >= 80 || currentStatusMessage.toLowerCase().includes('checking')) {
+    activeStepIndex = 3;
+  } else if (currentProgress >= 50 || currentStatusMessage.toLowerCase().includes('building')) {
+    activeStepIndex = 2;
+  } else if (currentProgress >= 30 || currentStatusMessage.toLowerCase().includes('cleaning')) {
+    activeStepIndex = 1;
+  } else {
+    activeStepIndex = 0;
+  }
+
   return (
     <div className="result-detail-page">
       {(isRegenerating || request.status === 'processing' || request.status === 'pending') && (
         <div className="loading-overlay">
-          <div className="spinner"></div>
-          <p>{request.status_message || 'Processing...'}</p>
-          <p className="progress-text">{request.progress_percentage}%</p>
+          <div className="progress-container">
+            <div className="progress-steps">
+              {steps.map((step, index) => (
+                <div
+                  key={index}
+                  className={`progress-step ${index <= activeStepIndex ? 'active' : ''} ${index < activeStepIndex ? 'completed' : ''}`}
+                >
+                  <div className="step-circle">
+                    {index < activeStepIndex ? '✓' : index + 1}
+                  </div>
+                  <span className="step-label">{step.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="progress-bar-track">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${currentProgress}%` }}
+              ></div>
+            </div>
+            <p className="progress-status-text">{currentStatusMessage || 'Processing...'}</p>
+          </div>
         </div>
       )}
 
@@ -168,8 +210,8 @@ const ResultDetailPage = () => {
       </div>
 
       <div className="comparison-slider-container" ref={sliderRef}>
-        {/* Magic Flip Mode */}
-        <div className="magic-flip-container" onClick={() => setShowOriginal(!showOriginal)}>
+        {/* Press to Reveal Mode */}
+        <div className="magic-flip-container">
           <div className={`image-layer ${showOriginal ? 'visible' : 'hidden'}`}>
             <img src={request.clean_image_url || request.original_image_url} alt="Original" />
             <span className="label before-label">Original</span>
@@ -182,7 +224,19 @@ const ResultDetailPage = () => {
             )}
             <span className="label after-label">Boss Security Screen</span>
           </div>
-          <div className="flip-instruction">Click to Toggle (Magic Flip)</div>
+
+          <div className="press-button-container">
+            <button
+              className="btn-press-reveal"
+              onMouseDown={() => setShowOriginal(false)}
+              onMouseUp={() => setShowOriginal(true)}
+              onMouseLeave={() => setShowOriginal(true)}
+              onTouchStart={() => setShowOriginal(false)}
+              onTouchEnd={() => setShowOriginal(true)}
+            >
+              PRESS HERE!
+            </button>
+          </div>
         </div>
       </div>
 

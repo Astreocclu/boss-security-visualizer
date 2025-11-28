@@ -106,8 +106,11 @@ class AIEnhancedImageProcessor:
 
             # Generate visualization
             # The ScreenVisualizer pipeline handles Cleanse -> Build -> Install -> Check
-            visualization_request.update_progress(30, "Running Screen King Pipeline (Cleanse -> Build -> Install -> Check)...")
             
+            def progress_callback(percent, message):
+                visualization_request.update_progress(percent, message)
+                logger.info(f"Progress: {percent}% - {message}")
+
             # We generate one high-quality variation
             variation_name = f"{screen_type.lower()}_standard"
             
@@ -130,7 +133,8 @@ class AIEnhancedImageProcessor:
                 original_image,
                 screen_type,
                 detection_areas=None, # Handled by Gemini
-                style_preferences=style_preferences
+                style_preferences=style_preferences,
+                progress_callback=progress_callback
             )
             logger.info("Returned from generation_service.generate_screen_visualization")
 

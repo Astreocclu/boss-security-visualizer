@@ -69,7 +69,8 @@ class GeminiImageGenerationService(AIImageGenerationService):
         original_image: Image.Image,
         screen_type: str,
         detection_areas: List[Tuple[int, int, int, int]] = None,
-        style_preferences: Dict[str, Any] = None
+        style_preferences: Dict[str, Any] = None,
+        progress_callback=None
     ) -> AIServiceResult:
         """
         Generate screen visualization using ScreenVisualizer pipeline.
@@ -115,7 +116,8 @@ class GeminiImageGenerationService(AIImageGenerationService):
             clean_image, result_image, quality_score, quality_reason = self.visualizer.process_pipeline(
                 original_image, 
                 scope=scope,
-                options=options
+                options=options,
+                progress_callback=progress_callback
             )
             
             # Convert back to bytes for the result
