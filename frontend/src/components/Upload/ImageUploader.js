@@ -8,13 +8,21 @@ const ImageUploader = ({
   maxSize = 10 * 1024 * 1024, // 10MB default
   acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   disabled = false,
-  className = ''
+  className = '',
+  value = null
 }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(value);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Sync internal state with value prop
+  useEffect(() => {
+    if (value !== selectedFile) {
+      setSelectedFile(value);
+    }
+  }, [value]);
 
   // Clean up the preview URL when component unmounts or when a new file is selected
   useEffect(() => {

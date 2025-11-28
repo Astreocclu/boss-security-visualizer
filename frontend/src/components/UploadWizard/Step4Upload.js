@@ -15,7 +15,10 @@ const Step4Upload = ({ formData, setFormData, nextStep, prevStep }) => {
             </div>
 
             <div className="upload-container">
-                <ImageUploader onImageSelect={handleImageSelect} />
+                <ImageUploader
+                    onImageSelect={handleImageSelect}
+                    value={formData.image}
+                />
             </div>
 
             <div className="wizard-actions">
