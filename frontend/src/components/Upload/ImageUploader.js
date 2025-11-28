@@ -9,20 +9,18 @@ const ImageUploader = ({
   acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   disabled = false,
   className = '',
-  value = null
+  value // undefined means uncontrolled, null/file means controlled
 }) => {
-  const [selectedFile, setSelectedFile] = useState(value);
+  const [internalFile, setInternalFile] = useState(null);
+
+  // Determine if component is controlled
+  const isControlled = value !== undefined;
+  const selectedFile = isControlled ? value : internalFile;
+
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
-
-  // Sync internal state with value prop
-  useEffect(() => {
-    if (value !== selectedFile) {
-      setSelectedFile(value);
-    }
-  }, [value]);
 
   // Clean up the preview URL when component unmounts or when a new file is selected
   useEffect(() => {
@@ -54,7 +52,7 @@ const ImageUploader = ({
 
   const handleFileChange = useCallback((file) => {
     if (!file) {
-      setSelectedFile(null);
+      if (!isControlled) setInternalFile(null);
       setError(null);
       onImageSelect(null);
       return;
@@ -63,15 +61,15 @@ const ImageUploader = ({
     const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
-      setSelectedFile(null);
+      if (!isControlled) setInternalFile(null);
       onImageSelect(null);
       return;
     }
 
-    setSelectedFile(file);
+    if (!isControlled) setInternalFile(file);
     setError(null);
     onImageSelect(file);
-  }, [validateFile, onImageSelect]);
+  }, [validateFile, onImageSelect, isControlled]);
 
   const handleInputChange = (e) => {
     const file = e.target.files[0];
@@ -112,7 +110,7 @@ const ImageUploader = ({
   }, [disabled]);
 
   const handleRemoveImage = useCallback(() => {
-    setSelectedFile(null);
+    if (!isControlled) setInternalFile(null);
     setError(null);
     onImageSelect(null);
 
@@ -120,7 +118,7 @@ const ImageUploader = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [onImageSelect]);
+  }, [onImageSelect, isControlled]);
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';

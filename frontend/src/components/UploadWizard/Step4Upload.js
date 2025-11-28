@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import ImageUploader from '../Upload/ImageUploader';
 
 const Step4Upload = ({ formData, setFormData, nextStep, prevStep }) => {
-    const handleImageSelect = (file) => {
+    const handleImageSelect = useCallback((file) => {
         setFormData(prev => ({ ...prev, image: file }));
-    };
+    }, [setFormData]);
 
     return (
         <div className="wizard-step fade-in">
