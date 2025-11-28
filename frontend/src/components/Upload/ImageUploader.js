@@ -103,7 +103,17 @@ const ImageUploader = ({
     }
   }, [disabled, handleFileChange]);
 
-  const handleBrowseClick = useCallback(() => {
+  const handleBrowseClick = useCallback((e) => {
+    if (e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+      // Prevent recursive calls if the click originated from the file input itself
+      if (fileInputRef.current && e.target === fileInputRef.current) {
+        return;
+      }
+    }
+
     if (!disabled && fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -205,6 +215,7 @@ const ImageUploader = ({
           type="file"
           ref={fileInputRef}
           onChange={handleInputChange}
+          onClick={(e) => e.stopPropagation()}
           accept={acceptedTypes.join(',')}
           className="file-input"
           disabled={disabled}
