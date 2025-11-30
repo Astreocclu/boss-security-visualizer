@@ -5,7 +5,7 @@ import {
   regenerateVisualizationRequest,
   generateAudit,
   getAuditReport,
-  getQuotePdfUrl
+  downloadSecurityReport
 } from '../services/api';
 import './ResultDetailPage.css';
 
@@ -105,14 +105,13 @@ const ResultDetailPage = () => {
     }
   };
 
-  const handleDownloadPdf = () => {
-    const pdfUrl = getQuotePdfUrl(id);
-    window.open(pdfUrl, '_blank');
-  };
-
-  const handleBuyNow = () => {
-    // TODO: Integrate Stripe payment flow
-    alert('Payment integration coming soon! Contact us to proceed with your order.');
+  const handleDownloadPdf = async () => {
+    try {
+      await downloadSecurityReport(id);
+    } catch (err) {
+      console.error('Failed to download report:', err);
+      alert('Failed to download security report. Please try again.');
+    }
   };
 
   if (isLoading && !request) {
@@ -274,12 +273,8 @@ const ResultDetailPage = () => {
           {/* New Audit Section */}
           <AuditResults auditReport={auditReport} />
 
-          {/* Quote & PDF Download Section */}
-          <QuoteView
-            visualizationRequest={request}
-            onBuyNow={handleBuyNow}
-            onDownloadPdf={handleDownloadPdf}
-          />
+          {/* Download Security Report */}
+          <QuoteView onDownloadPdf={handleDownloadPdf} />
         </>
       )}
 

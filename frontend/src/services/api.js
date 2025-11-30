@@ -449,7 +449,7 @@ export {
   // Commerce
   createPaymentIntent,
   confirmDeposit,
-  getQuotePdfUrl,
+  downloadSecurityReport,
 
   // Tenant Config
   fetchTenantConfig
@@ -485,6 +485,19 @@ const confirmDeposit = async (data) => {
   );
 };
 
-const getQuotePdfUrl = (requestId) => {
-  return `${api.defaults.baseURL}/visualization/${requestId}/pdf/`;
+const downloadSecurityReport = async (requestId) => {
+  const response = await api.get(`/visualization/${requestId}/pdf/`, {
+    responseType: 'blob'
+  });
+
+  // Create blob URL and trigger download
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `security-report-${requestId}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 };
