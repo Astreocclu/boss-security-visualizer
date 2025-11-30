@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import './ProcessingScreen.css';
 
-const STAGE_MESSAGES = [
-  { max: 15, message: "Analyzing your home's architecture..." },
-  { max: 30, message: "Detecting windows and entry points..." },
-  { max: 45, message: "Preparing image for visualization..." },
-  { max: 70, message: "Rendering security screens..." },
-  { max: 85, message: "Applying realistic shadows and lighting..." },
-  { max: 100, message: "Running final quality check..." },
+const SALES_MESSAGES = [
+  "Initializing Nano Banana Pro Architecture...",
+  "Scanning architectural geometry & light paths...",
+  "Detecting vulnerabilities & ground-level entry points...",
+  "Removing visual clutter (hoses, trash cans)...",
+  "Fabricating 12x12 Stainless Steel Security Mesh...",
+  "Calibrating final lighting and shadow render...",
 ];
 
 const FACTS = [
@@ -32,22 +32,31 @@ const ProcessingScreen = ({
   const [displayProgress, setDisplayProgress] = useState(0);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [factFading, setFactFading] = useState(false);
-  const [stageMessage, setStageMessage] = useState(STAGE_MESSAGES[0].message);
-  const [stageFading, setStageFading] = useState(false);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [messageFading, setMessageFading] = useState(false);
   const lastBackendProgress = useRef(backendProgress);
   const animationFrame = useRef(null);
+  const startTimeRef = useRef(null);
 
-  // Smooth progress animation between backend updates
+  // Performance logger - capture start time on mount
   useEffect(() => {
-    const targetProgress = Math.min(backendProgress + 10, 95);
+    startTimeRef.current = performance.now();
+    return () => {
+      startTimeRef.current = null;
+    };
+  }, []);
+
+  // Smooth, slow progress animation between backend updates
+  useEffect(() => {
+    const targetProgress = Math.min(backendProgress + 5, 95);
 
     const animate = () => {
       setDisplayProgress(prev => {
         // Never go backwards, never exceed target
         if (prev >= targetProgress) return prev;
 
-        // Smooth increment
-        const increment = Math.max(0.1, (targetProgress - prev) * 0.05);
+        // Slower, steadier increment (reduced from 0.05 to 0.015)
+        const increment = Math.max(0.05, (targetProgress - prev) * 0.015);
         const next = Math.min(prev + increment, targetProgress);
 
         if (next < targetProgress) {
@@ -70,29 +79,36 @@ const ProcessingScreen = ({
     };
   }, [backendProgress]);
 
-  // Jump to 100% on complete
+  // Jump to 100% on complete and log performance
   useEffect(() => {
     if (status === 'complete') {
       setDisplayProgress(100);
+      // Performance logger - log completion time
+      if (startTimeRef.current) {
+        const endTime = performance.now();
+        const duration = (endTime - startTimeRef.current) / 1000;
+        console.log(`⏱️ VISUALIZATION TIME: ${duration.toFixed(2)} seconds`); // eslint-disable-line no-console
+      }
       if (onComplete) onComplete();
     } else if (status === 'failed') {
       if (onError) onError(statusMessage || 'Processing failed');
     }
   }, [status, onComplete, onError, statusMessage]);
 
-  // Update stage message based on progress
+  // Rotate sales messages every 8 seconds
   useEffect(() => {
-    const stage = STAGE_MESSAGES.find(s => displayProgress <= s.max) || STAGE_MESSAGES[STAGE_MESSAGES.length - 1];
-    if (stage.message !== stageMessage) {
-      setStageFading(true);
+    const interval = setInterval(() => {
+      setMessageFading(true);
       setTimeout(() => {
-        setStageMessage(stage.message);
-        setStageFading(false);
-      }, 200);
-    }
-  }, [displayProgress, stageMessage]);
+        setMessageIndex(prev => (prev + 1) % SALES_MESSAGES.length);
+        setMessageFading(false);
+      }, 400);
+    }, 8000);
 
-  // Rotate facts every 8 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  // Rotate facts every 10 seconds (offset from messages)
   useEffect(() => {
     const interval = setInterval(() => {
       setFactFading(true);
@@ -100,7 +116,7 @@ const ProcessingScreen = ({
         setCurrentFactIndex(prev => (prev + 1) % FACTS.length);
         setFactFading(false);
       }, 400);
-    }, 8000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
@@ -140,29 +156,32 @@ const ProcessingScreen = ({
   }
 
   const currentFact = FACTS[currentFactIndex];
+  const currentMessage = SALES_MESSAGES[messageIndex];
 
   return (
     <div className="processing-screen">
       <div className="processing-container">
-        {/* Image with scan line */}
-        <div className="image-section">
-          {originalImageUrl ? (
-            <div className="image-wrapper">
+        {/* Radar Animation */}
+        <div className="radar-section">
+          <div className="radar-container">
+            <div className="radar-ring radar-ring-1" />
+            <div className="radar-ring radar-ring-2" />
+            <div className="radar-ring radar-ring-3" />
+            <div className="radar-core" />
+            {originalImageUrl && (
               <img
                 src={originalImageUrl}
                 alt="Your home"
-                className="processing-image"
+                className="radar-image"
               />
-              <div className="scan-line" />
-              <div className="image-overlay" />
-            </div>
-          ) : (
-            <div className="image-placeholder">
-              <div className="placeholder-icon">🏠</div>
-              <div className="scan-line" />
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Sales Message */}
+        <h2 className={`sales-message ${messageFading ? 'fading' : ''}`}>
+          {currentMessage}
+        </h2>
 
         {/* Progress section */}
         <div className="progress-section">
@@ -174,11 +193,6 @@ const ProcessingScreen = ({
             <div className="progress-shimmer" />
           </div>
           <div className="progress-percentage">{Math.round(displayProgress)}%</div>
-        </div>
-
-        {/* Stage message */}
-        <div className={`stage-message ${stageFading ? 'fading' : ''}`}>
-          {stageMessage}
         </div>
 
         {/* Fact card */}

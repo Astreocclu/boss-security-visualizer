@@ -275,7 +275,7 @@ class VisualizationRequest(models.Model):
     )
     color = models.CharField(
         max_length=50,
-        choices=[('Black', 'Black'), ('Dark Bronze', 'Dark Bronze'), ('Stucco', 'Stucco')],
+        choices=[('Black', 'Black'), ('Dark Bronze', 'Dark Bronze'), ('Stucco', 'Stucco'), ('White', 'White'), ('Almond', 'Almond')],
         null=True,
         blank=True,
         help_text="Legacy: Screen frame/fabric color"
