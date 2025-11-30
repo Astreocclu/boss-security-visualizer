@@ -10,6 +10,7 @@ import './ResultDetailPage.css';
 
 import Skeleton from '../components/Common/Skeleton';
 import AuditResults from '../features/audit/AuditResults';
+import ProcessingScreen from '../components/ProcessingScreen';
 
 const ResultDetailPage = () => {
   const { id } = useParams();
@@ -170,35 +171,24 @@ const ResultDetailPage = () => {
     activeStepIndex = 0;
   }
 
+  // Show ProcessingScreen for pending/processing states
+  const isProcessing = isRegenerating || request.status === 'processing' || request.status === 'pending';
+
+  if (isProcessing) {
+    return (
+      <ProcessingScreen
+        visualizationId={id}
+        originalImageUrl={request.clean_image_url || request.original_image_url}
+        backendProgress={currentProgress}
+        statusMessage={currentStatusMessage}
+        status={request.status}
+        onRetry={handleRegenerate}
+      />
+    );
+  }
+
   return (
     <div className="result-detail-page">
-      {(isRegenerating || request.status === 'processing' || request.status === 'pending') && (
-        <div className="loading-overlay">
-          <div className="progress-container">
-            <div className="progress-steps">
-              {steps.map((step, index) => (
-                <div
-                  key={index}
-                  className={`progress-step ${index <= activeStepIndex ? 'active' : ''} ${index < activeStepIndex ? 'completed' : ''}`}
-                >
-                  <div className="step-circle">
-                    {index < activeStepIndex ? '✓' : index + 1}
-                  </div>
-                  <span className="step-label">{step.label}</span>
-                </div>
-              ))}
-            </div>
-            <div className="progress-bar-track">
-              <div
-                className="progress-bar-fill"
-                style={{ width: `${currentProgress}%` }}
-              ></div>
-            </div>
-            <p className="progress-status-text">{currentStatusMessage || 'Processing...'}</p>
-          </div>
-        </div>
-      )}
-
       <div className="result-header">
         <div>
           <h2>Visualization #{id}</h2>
