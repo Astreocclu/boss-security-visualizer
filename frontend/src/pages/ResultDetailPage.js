@@ -81,7 +81,12 @@ const ResultDetailPage = () => {
   const handleGenerateQuote = () => {
     setIsGeneratingQuote(true);
     setTimeout(() => {
-      navigate('/quote/success', { state: { visualizationId: id } });
+      navigate('/quote/success', {
+        state: {
+          visualizationId: id,
+          afterImageUrl: resultImageUrl
+        }
+      });
     }, 1500);
   };
 
