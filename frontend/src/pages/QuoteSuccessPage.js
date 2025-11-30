@@ -92,7 +92,7 @@ const QuoteSuccessPage = () => {
                 </tr>
                 <tr>
                   <td className="spec-label">Warranty</td>
-                  <td className="spec-value">Lifetime structural, 10-year mesh</td>
+                  <td className="spec-value">15-year comprehensive warranty</td>
                 </tr>
               </tbody>
             </table>
@@ -103,14 +103,14 @@ const QuoteSuccessPage = () => {
             <h3>Itemized Investment</h3>
             <div className="cost-items">
               <div className="cost-line">
-                <span className="cost-description">3x Standard Window Screens (36" x 48")</span>
+                <span className="cost-description">1x Security Screen Door (72" x 80")</span>
                 <span className="cost-dots" />
-                <span className="cost-amount">$1,200.00</span>
+                <span className="cost-amount">$2,500.00</span>
               </div>
               <div className="cost-line">
-                <span className="cost-description">1x Patio Slider Security Door (72" x 80")</span>
+                <span className="cost-description">3x Security Screen Windows (36" x 48" ea.)</span>
                 <span className="cost-dots" />
-                <span className="cost-amount">$1,500.00</span>
+                <span className="cost-amount">$3,600.00</span>
               </div>
               <div className="cost-line sub-item">
                 <span className="cost-description">Professional Installation</span>
@@ -121,7 +121,7 @@ const QuoteSuccessPage = () => {
 
             <div className="cost-total">
               <span className="total-label">Total Investment</span>
-              <span className="total-amount">$2,700.00</span>
+              <span className="total-amount">$6,100.00</span>
             </div>
           </div>
 

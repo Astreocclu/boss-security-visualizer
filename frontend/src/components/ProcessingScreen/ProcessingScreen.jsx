@@ -16,7 +16,7 @@ const FACTS = [
   { highlight: "66%", rest: " of solar heat blocked, reducing energy costs." },
   { highlight: "100 ft-lbs", rest: " of impact force protection per screen." },
   { highlight: "Marine-grade", rest: " stainless steel that never rusts or corrodes." },
-  { highlight: "25 year", rest: " warranty on all Boss Security Screens." },
+  { highlight: "15 year", rest: " comprehensive warranty on all Boss Security Screens." },
 ];
 
 const ProcessingScreen = ({
