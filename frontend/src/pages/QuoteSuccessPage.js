@@ -20,11 +20,6 @@ const QuoteSuccessPage = () => {
       <div className="quote-document">
         {/* Document Header */}
         <header className="doc-header">
-          {/* CRM Sync Badge */}
-          <div className="crm-badge">
-            <span className="crm-dot" />
-            Synced to CRM
-          </div>
           <div className="doc-header-left">
             <Shield className="doc-logo-icon" size={32} />
             <div className="doc-brand">
@@ -153,6 +148,12 @@ const QuoteSuccessPage = () => {
           <ArrowLeft size={18} />
           RETURN TO DASHBOARD
         </Link>
+      </div>
+
+      {/* CRM Sync Badge */}
+      <div className="crm-badge">
+        <span className="crm-dot" />
+        Synced to CRM
       </div>
     </div>
   );
