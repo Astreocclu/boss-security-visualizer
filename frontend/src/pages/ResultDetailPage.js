@@ -225,16 +225,12 @@ const ResultDetailPage = () => {
             <span className="label after-label">Boss Security Screen</span>
           </div>
 
-          <div className="press-button-container">
+          <div className="toggle-button-container">
             <button
-              className="btn-press-reveal"
-              onMouseDown={() => setShowOriginal(false)}
-              onMouseUp={() => setShowOriginal(true)}
-              onMouseLeave={() => setShowOriginal(true)}
-              onTouchStart={() => setShowOriginal(false)}
-              onTouchEnd={() => setShowOriginal(true)}
+              className={`btn-toggle-view ${!showOriginal ? 'active' : ''}`}
+              onClick={() => setShowOriginal(!showOriginal)}
             >
-              PRESS HERE!
+              {showOriginal ? 'Show Security Screens' : 'Show Original'}
             </button>
           </div>
         </div>
