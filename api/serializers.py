@@ -5,6 +5,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUpload
 from PIL import Image
 import io
 from .models import VisualizationRequest, GeneratedImage, UserProfile
+from api.tenants import get_tenant_config
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -271,5 +272,25 @@ class VisualizationRequestCreateSerializer(serializers.ModelSerializer):
         # Reuse validation from detail serializer
         detail_serializer = VisualizationRequestDetailSerializer()
         return detail_serializer.validate_original_image(value)
+
+    def validate_mesh_choice(self, value):
+        """Validate mesh choice against tenant config."""
+        config = get_tenant_config()
+        valid_choices = [c[0] for c in config.get_mesh_choices()]
+        if value not in valid_choices:
+            raise serializers.ValidationError(
+                f"Invalid mesh choice. Valid options: {valid_choices}"
+            )
+        return value
+    
+    def validate_frame_color(self, value):
+        """Validate frame color against tenant config."""
+        config = get_tenant_config()
+        valid_choices = [c[0] for c in config.get_frame_color_choices()]
+        if value not in valid_choices:
+            raise serializers.ValidationError(
+                f"Invalid frame color. Valid options: {valid_choices}"
+            )
+        return value
 
 

@@ -12,7 +12,7 @@ from google import genai
 from google.genai import types
 from django.conf import settings
 
-from .prompts import get_cleanup_prompt, get_screen_insertion_prompt, get_quality_check_prompt
+from api.tenants import get_tenant_config
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class ScreenVisualizer:
 
     def process_pipeline(self, original_image: Image.Image, scope: dict, options: dict, progress_callback=None) -> Tuple[Image.Image, Image.Image, float, str]:
         """
-        Executes the visualization pipeline sequentially based on user scope.
+        Executes the visualization pipeline sequentially based on tenant configuration.
         
         Args:
             original_image (Image): The source image.
@@ -41,66 +41,51 @@ class ScreenVisualizer:
             progress_callback (callable, optional): Function to update progress (percent, message).
         """
         try:
+            tenant_config = get_tenant_config()
+            prompts = tenant_config.get_prompts_module()
+            
             current_image = original_image
+            clean_image = original_image # Default if no cleanup
+            
+            score = 0.95
+            reason = "Pipeline completed successfully."
 
             if progress_callback:
                 progress_callback(10, "Analyzing")
 
-            # --- Step 1: The Foundation (Cleanup) ---
-            if progress_callback:
-                progress_callback(30, "Cleaning")
+            steps = tenant_config.get_pipeline_steps()
+            
+            for i, step_name in enumerate(steps):
+                step_config = tenant_config.get_step_config(step_name)
+                step_type = step_config.get('type')
                 
-            # We always clean the image first to remove visual noise.
-            cleanup_prompt = get_cleanup_prompt()
-            
-            clean_image = self._call_gemini_edit(original_image, cleanup_prompt)
-            self._save_debug_image(clean_image, "1_cleanup")
-            logger.info("Pipeline Step 1: Scene Cleanup complete.")
-            
-            current_image = clean_image
-
-            # --- Step 2-4: Building (Insertions) ---
-            if progress_callback:
-                progress_callback(50, "Building")
-
-            # --- Step 2: Patio (Background Layer) ---
-            if scope.get('patio', False):
-                patio_prompt = get_screen_insertion_prompt("patio enclosure", options)
-                current_image = self._call_gemini_edit(current_image, patio_prompt)
-                self._save_debug_image(current_image, "2_patio")
-                logger.info("Pipeline Step 2: Patio complete.")
-
-            # --- Step 3: Windows (Midground Layer) ---
-            if scope.get('windows', False):
-                window_prompt = get_screen_insertion_prompt("windows", options)
-                current_image = self._call_gemini_edit(current_image, window_prompt)
-                self._save_debug_image(current_image, "3_windows")
-                logger.info("Pipeline Step 3: Windows complete.")
-
-            # --- Step 4: Doors (Foreground Layer) ---
-            if scope.get('doors', False):
-                door_prompt = get_screen_insertion_prompt("entry doors", options)
-                current_image = self._call_gemini_edit(current_image, door_prompt)
-                self._save_debug_image(current_image, "4_doors")
-                logger.info("Pipeline Step 4: Doors complete.")
-
-            # --- Quality Check ---
-            if progress_callback:
-                progress_callback(80, "Checking light")
+                # Update progress
+                if progress_callback and 'progress_weight' in step_config:
+                    progress_callback(step_config['progress_weight'], step_config.get('description', 'Processing'))
                 
-            logger.info("Pipeline Step 5: Quality Check")
-            quality_prompt = get_quality_check_prompt(scope)
-            
-            if progress_callback:
-                progress_callback(85, "Checking quality")
-
-            # Pass both clean (reference) and current (final) images for comparison
-            quality_result = self._call_gemini_json([clean_image, current_image], quality_prompt)
-            
-            score = quality_result.get('score', 0.95)
-            reason = quality_result.get('reason', 'AI quality check completed.')
-            
-            logger.info(f"Quality Check: Score={score}, Reason={reason}")
+                if step_type == 'cleanup':
+                    cleanup_prompt = prompts.get_cleanup_prompt()
+                    clean_image = self._call_gemini_edit(original_image, cleanup_prompt)
+                    self._save_debug_image(clean_image, f"{i}_{step_name}")
+                    current_image = clean_image
+                    logger.info(f"Pipeline Step: {step_name} complete.")
+                    
+                elif step_type == 'insertion':
+                    scope_key = step_config.get('scope_key')
+                    if scope_key and scope.get(scope_key, False):
+                        feature_name = step_config.get('feature_name')
+                        prompt = prompts.get_screen_insertion_prompt(feature_name, options)
+                        current_image = self._call_gemini_edit(current_image, prompt)
+                        self._save_debug_image(current_image, f"{i}_{step_name}")
+                        logger.info(f"Pipeline Step: {step_name} complete.")
+                        
+                elif step_type == 'quality_check':
+                    quality_prompt = prompts.get_quality_check_prompt(scope)
+                    # Pass both clean (reference) and current (final) images
+                    quality_result = self._call_gemini_json([clean_image, current_image], quality_prompt)
+                    score = quality_result.get('score', 0.95)
+                    reason = quality_result.get('reason', 'AI quality check completed.')
+                    logger.info(f"Quality Check: Score={score}, Reason={reason}")
 
             return clean_image, current_image, score, reason
 

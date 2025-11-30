@@ -394,6 +394,14 @@ const healthCheck = async () => {
   );
 };
 
+// Tenant Config
+const fetchTenantConfig = async () => {
+  return handleApiCall(
+    () => api.get('/config/'),
+    'Failed to fetch tenant config'
+  );
+};
+
 // Export all functions
 export {
   // Authentication
@@ -441,7 +449,10 @@ export {
   // Commerce
   createPaymentIntent,
   confirmDeposit,
-  getQuotePdfUrl
+  getQuotePdfUrl,
+
+  // Tenant Config
+  fetchTenantConfig
 };
 
 // Audit functions

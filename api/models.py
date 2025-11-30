@@ -6,6 +6,15 @@ from django.core.validators import FileExtensionValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from PIL import Image
+from api.tenants import get_tenant_config
+
+def get_mesh_choices():
+    """Dynamic mesh choices from tenant config."""
+    return get_tenant_config().get_mesh_choices()
+
+def get_frame_color_choices():
+    """Dynamic frame color choices from tenant config."""
+    return get_tenant_config().get_frame_color_choices()
 
 
 def validate_image_size(image):

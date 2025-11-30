@@ -1,10 +1,30 @@
 import React from 'react';
 import { Shield, Star, ArrowLeft, ArrowRight } from 'lucide-react';
 
+import { useTenantConfig } from '../../hooks/useTenantConfig';
+
 const Step2Mesh = ({ formData, setFormData, nextStep, prevStep }) => {
+    const { config, loading } = useTenantConfig();
+
     const handleMeshSelect = (mesh) => {
         setFormData(prev => ({ ...prev, meshChoice: mesh }));
     };
+
+    if (loading) {
+        return <div className="wizard-step fade-in"><div className="step-header"><h2>Loading options...</h2></div></div>;
+    }
+
+    const meshOptions = config?.choices?.mesh?.map(([value, label]) => {
+        // Map visual properties based on ID (could be moved to config in future)
+        const isPremium = value === '12x12_american';
+        return {
+            id: value,
+            label: label,
+            desc: isPremium ? 'Premium Marine Grade' : (value === '10x10' ? 'Heavy Duty Protection' : 'Enhanced Security Mesh'),
+            icon: isPremium ? Star : Shield,
+            badge: isPremium ? 'Best Value' : null
+        };
+    }) || [];
 
     return (
         <div className="wizard-step fade-in">
@@ -14,27 +34,7 @@ const Step2Mesh = ({ formData, setFormData, nextStep, prevStep }) => {
             </div>
 
             <div className="radio-card-grid">
-                {[
-                    {
-                        id: '10x10',
-                        label: '10x10 Standard',
-                        desc: 'Heavy Duty Protection',
-                        icon: Shield
-                    },
-                    {
-                        id: '12x12',
-                        label: '12x12 Security',
-                        desc: 'Enhanced Security Mesh',
-                        icon: Shield
-                    },
-                    {
-                        id: '12x12_american',
-                        label: '12x12 American',
-                        desc: 'Premium Marine Grade',
-                        badge: 'Best Value',
-                        icon: Star
-                    }
-                ].map(mesh => {
+                {meshOptions.map(mesh => {
                     const Icon = mesh.icon;
                     const isSelected = formData.meshChoice === mesh.id;
                     return (

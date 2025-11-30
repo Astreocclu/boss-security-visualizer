@@ -238,5 +238,12 @@ LOGGING = {
     },
 }
 
+# Tenant Configuration
+ACTIVE_TENANT = os.environ.get('ACTIVE_TENANT', 'boss')
+
+# Feature flag for gradual rollout
+USE_TENANT_REGISTRY = os.environ.get('USE_TENANT_REGISTRY', 'true').lower() == 'true'
+
+
 
 

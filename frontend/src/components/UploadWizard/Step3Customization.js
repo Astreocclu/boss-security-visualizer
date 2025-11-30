@@ -1,7 +1,11 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, Award } from 'lucide-react';
 
+import { useTenantConfig } from '../../hooks/useTenantConfig';
+
 const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
+    const { config, loading } = useTenantConfig();
+
     const handleColorSelect = (type, color) => {
         setFormData(prev => ({ ...prev, [type]: color }));
     };
@@ -9,6 +13,34 @@ const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
     const handleMeshSelect = (mesh) => {
         setFormData(prev => ({ ...prev, meshChoice: mesh }));
     };
+
+    if (loading) {
+        return <div className="wizard-step fade-in"><div className="step-header"><h2>Loading options...</h2></div></div>;
+    }
+
+    const meshOptions = config?.choices?.mesh?.map(([value, label]) => ({
+        id: value,
+        label,
+        desc: value === '12x12_american' ? 'Marine-grade stainless steel' : (value === '10x10' ? 'Maximum security' : 'Industry standard security mesh'),
+        badge: value === '12x12_american' ? 'Best Value' : null
+    })) || [];
+
+    const frameColorOptions = config?.choices?.frame_color?.map(([value, label]) => {
+        let hex = '#000000';
+        let border = false;
+        if (value === 'Dark Bronze') hex = '#4B3621';
+        if (value === 'Stucco') hex = '#9F9080';
+        if (value === 'White') { hex = '#FFFFFF'; border = true; }
+        if (value === 'Almond') hex = '#EADDcF';
+        return { id: value, hex, border };
+    }) || [];
+
+    const meshColorOptions = config?.choices?.mesh_color?.map(([value, label]) => {
+        let hex = '#000000';
+        if (value === 'Stucco') hex = '#9F9080';
+        if (value === 'Bronze') hex = '#CD7F32';
+        return { id: value, hex, recommended: value === 'Black' };
+    }) || [];
 
     return (
         <div className="wizard-step fade-in">
@@ -21,11 +53,7 @@ const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
             <div className="customization-section">
                 <h3>Mesh Type</h3>
                 <div className="mesh-options">
-                    {[
-                        { id: '12x12', label: '12x12 Standard', desc: 'Industry standard security mesh' },
-                        { id: '12x12_american', label: '12x12 American (Premium)', desc: 'Marine-grade stainless steel', badge: 'Best Value' },
-                        { id: '10x10', label: '10x10 Heavy Duty', desc: 'Maximum security' }
-                    ].map(mesh => (
+                    {meshOptions.map(mesh => (
                         <div
                             key={mesh.id}
                             className={`mesh-card ${formData.meshChoice === mesh.id ? 'selected' : ''}`}
@@ -48,13 +76,7 @@ const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
             <div className="customization-section">
                 <h3>Frame Color</h3>
                 <div className="color-swatches-grid">
-                    {[
-                        { id: 'Black', hex: '#000000' },
-                        { id: 'Dark Bronze', hex: '#4B3621' },
-                        { id: 'Stucco', hex: '#9F9080' },
-                        { id: 'White', hex: '#FFFFFF', border: true },
-                        { id: 'Almond', hex: '#EADDcF' }
-                    ].map(color => (
+                    {frameColorOptions.map(color => (
                         <div
                             key={color.id}
                             className={`swatch-container ${formData.frameColor === color.id ? 'selected' : ''}`}
@@ -76,11 +98,7 @@ const Step3Customization = ({ formData, setFormData, nextStep, prevStep }) => {
             <div className="customization-section">
                 <h3>Mesh Color</h3>
                 <div className="color-swatches-grid">
-                    {[
-                        { id: 'Black', hex: '#000000', recommended: true },
-                        { id: 'Stucco', hex: '#9F9080' },
-                        { id: 'Bronze', hex: '#CD7F32' }
-                    ].map(color => (
+                    {meshColorOptions.map(color => (
                         <div
                             key={color.id}
                             className={`swatch-container ${formData.meshColor === color.id ? 'selected' : ''}`}
