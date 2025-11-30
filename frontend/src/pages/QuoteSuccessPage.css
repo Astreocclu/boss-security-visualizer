@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+.quote-success-page {
+  min-height: 100vh;
+  background-color: #f7fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.quote-success-container {
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+.success-icon {
+  color: #38a169;
+  margin-bottom: 1.5rem;
+  animation: scaleIn 0.4s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.quote-success-page h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 2rem 0;
+}
+
+.quote-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.quote-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.quote-row:last-child {
+  border-bottom: none;
+}
+
+.quote-row.highlight {
+  background: linear-gradient(135deg, #fffaf0 0%, #fef5e7 100%);
+  margin: 1rem -1.5rem -1.5rem -1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0 0 12px 12px;
+  border-bottom: none;
+}
+
+.quote-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4a5568;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.quote-value {
+  font-weight: 600;
+  color: #1a202c;
+  font-size: 1rem;
+}
+
+.quote-value.status-sent {
+  color: #38a169;
+}
+
+.quote-value.price {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #c05621;
+}
+
+.next-steps {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  border-left: 4px solid #c05621;
+}
+
+.next-steps-icon {
+  color: #c05621;
+  margin-bottom: 0.75rem;
+}
+
+.next-steps h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 0.75rem 0;
+}
+
+.next-steps p {
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.quote-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quote-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.quote-actions .btn-primary {
+  background-color: #c05621;
+  color: white;
+  box-shadow: 0 4px 12px rgba(192, 86, 33, 0.3);
+}
+
+.quote-actions .btn-primary:hover {
+  background-color: #9c4221;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(192, 86, 33, 0.4);
+}
+
+.quote-actions .btn-secondary {
+  background-color: white;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+}
+
+.quote-actions .btn-secondary:hover {
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .quote-success-page {
+    padding: 1rem;
+  }
+
+  .quote-success-page h1 {
+    font-size: 1.5rem;
+  }
+
+  .quote-card {
+    padding: 1rem;
+  }
+
+  .quote-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .quote-row.highlight {
+    margin: 1rem -1rem -1rem -1rem;
+    padding: 1rem;
+  }
+
+  .quote-value.price {
+    font-size: 1.25rem;
+  }
+
+  .quote-actions {
+    flex-direction: column;
+  }
+
+  .quote-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

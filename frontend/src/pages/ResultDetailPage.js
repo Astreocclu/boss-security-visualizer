@@ -1,65 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { FileText } from 'lucide-react';
 import {
   getVisualizationRequestById,
-  regenerateVisualizationRequest,
-  generateAudit,
-  getAuditReport
+  regenerateVisualizationRequest
 } from '../services/api';
 import './ResultDetailPage.css';
 
 import Skeleton from '../components/Common/Skeleton';
-import AuditResults from '../features/audit/AuditResults';
 import ProcessingScreen from '../components/ProcessingScreen';
 
 const ResultDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const sliderRef = React.useRef(null);
+  const sliderRef = useRef(null);
 
   const [request, setRequest] = useState(null);
-  const [auditReport, setAuditReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [showOriginal, setShowOriginal] = useState(true); // Magic Flip State
+  const [showOriginal, setShowOriginal] = useState(true);
+  const [isGeneratingQuote, setIsGeneratingQuote] = useState(false);
+
+  const fetchRequestDetails = useCallback(async () => {
+    try {
+      const data = await getVisualizationRequestById(id);
+      setRequest(data);
+      setError(null);
+
+      if (data.status === 'complete' || data.status === 'failed') {
+        setIsLoading(false);
+        setIsRegenerating(false);
+        return true; // Stop polling
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`Error fetching visualization request #${id}:`, err);
+      if (err.response?.status === 404) {
+        setError(`Visualization request #${id} not found.`);
+        return true;
+      } else {
+        setError('Failed to load visualization request details. Please try again later.');
+      }
+    } finally {
+      if (!isRegenerating) {
+        setIsLoading(false);
+      }
+    }
+    return false; // Continue polling
+  }, [id, isRegenerating]);
 
   useEffect(() => {
-    const fetchRequestDetails = async () => {
-      try {
-        const data = await getVisualizationRequestById(id);
-        setRequest(data);
-        setError(null);
-
-        if (data.status === 'complete' || data.status === 'failed') {
-          setIsLoading(false);
-          setIsRegenerating(false);
-
-          // Trigger or fetch audit if complete
-          if (data.status === 'complete') {
-            fetchAudit(id);
-          }
-
-          return true; // Stop polling
-        }
-      } catch (err) {
-        console.error(`Error fetching visualization request #${id}:`, err);
-        if (err.response?.status === 404) {
-          setError(`Visualization request #${id} not found.`);
-          return true;
-        } else {
-          if (isLoading) {
-            setError('Failed to load visualization request details. Please try again later.');
-          }
-        }
-      } finally {
-        if (!isRegenerating) {
-          setIsLoading(false);
-        }
-      }
-      return false; // Continue polling
-    };
-
     fetchRequestDetails();
 
     const pollInterval = setInterval(async () => {
@@ -72,25 +63,7 @@ const ResultDetailPage = () => {
     return () => {
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [id, isRegenerating]);
-
-  const fetchAudit = async (requestId) => {
-    try {
-      // Try to get existing report
-      const report = await getAuditReport(requestId);
-      setAuditReport(report);
-    } catch (err) {
-      // If not found, generate it
-      if (err.status === 404) {
-        try {
-          const newReport = await generateAudit(requestId);
-          setAuditReport(newReport);
-        } catch (genErr) {
-          console.error("Failed to generate audit:", genErr);
-        }
-      }
-    }
-  };
+  }, [fetchRequestDetails]);
 
   const handleRegenerate = async () => {
     try {
@@ -98,10 +71,18 @@ const ResultDetailPage = () => {
       await regenerateVisualizationRequest(id);
       // Polling will pick up the status change
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to regenerate:', err);
       setError('Failed to start regeneration. Please try again.');
       setIsRegenerating(false);
     }
+  };
+
+  const handleGenerateQuote = () => {
+    setIsGeneratingQuote(true);
+    setTimeout(() => {
+      navigate('/quote/success', { state: { visualizationId: id } });
+    }, 1500);
   };
 
   if (isLoading && !request) {
@@ -140,36 +121,9 @@ const ResultDetailPage = () => {
 
   const resultImage = request.results && request.results.length > 0 ? request.results[0] : null;
   const resultImageUrl = resultImage ? resultImage.generated_image_url : null;
-  const qualityScore = resultImage?.metadata?.quality_score || 0;
-
-  const getScoreColorClass = (score) => {
-    if (score >= 90) return 'high';
-    if (score >= 70) return 'medium';
-    return 'low';
-  };
-
-  // Granular Progress Bar Logic
-  const steps = [
-    { label: 'Analyzing', percent: 10 },
-    { label: 'Cleaning', percent: 30 },
-    { label: 'Building', percent: 50 },
-    { label: 'Checking', percent: 80 } // Shared by Checking light/quality
-  ];
 
   const currentProgress = request?.progress_percentage || 0;
   const currentStatusMessage = request?.status_message || '';
-
-  // Determine active step index based on progress or message
-  let activeStepIndex = 0;
-  if (currentProgress >= 80 || currentStatusMessage.toLowerCase().includes('checking')) {
-    activeStepIndex = 3;
-  } else if (currentProgress >= 50 || currentStatusMessage.toLowerCase().includes('building')) {
-    activeStepIndex = 2;
-  } else if (currentProgress >= 30 || currentStatusMessage.toLowerCase().includes('cleaning')) {
-    activeStepIndex = 1;
-  } else {
-    activeStepIndex = 0;
-  }
 
   // Show ProcessingScreen for pending/processing states
   const isProcessing = isRegenerating || request.status === 'processing' || request.status === 'pending';
@@ -226,28 +180,28 @@ const ResultDetailPage = () => {
         </div>
       </div>
 
+      {/* Generate Quote CTA */}
       {request.status === 'complete' && (
-        <>
-          <div className="quality-score-section">
-            <div className={`score-circle ${getScoreColorClass(Math.round(qualityScore * 100))}`}>
-              <span className="score-value">{Math.round(qualityScore * 100)}%</span>
-            </div>
-            <div className="score-label">AI Quality Score</div>
+        <div className="quote-cta-section">
+          <button
+            className="btn-generate-quote"
+            onClick={handleGenerateQuote}
+            disabled={isGeneratingQuote}
+          >
+            <FileText size={20} />
+            {isGeneratingQuote ? 'Analyzing Dimensions...' : 'GENERATE OFFICIAL QUOTE'}
+          </button>
+        </div>
+      )}
 
-            {resultImage?.metadata?.quality_reason && (
-              <div className="quality-reason">
-                <strong>AI Analysis:</strong> {resultImage.metadata.quality_reason}
-              </div>
-            )}
-
-            <p className="text-muted mt-2">
-              Based on AI analysis of realism, installation accuracy, and image clarity.
-            </p>
+      {/* Loading Overlay */}
+      {isGeneratingQuote && (
+        <div className="quote-loading-overlay">
+          <div className="quote-loading-content">
+            <div className="quote-spinner" />
+            <p>Analyzing Dimensions...</p>
           </div>
-
-          {/* New Audit Section */}
-          <AuditResults auditReport={auditReport} />
-        </>
+        </div>
       )}
 
       <div className="action-bar">
