@@ -4,12 +4,14 @@ import {
   getVisualizationRequestById,
   regenerateVisualizationRequest,
   generateAudit,
-  getAuditReport
+  getAuditReport,
+  getQuotePdfUrl
 } from '../services/api';
 import './ResultDetailPage.css';
 
 import Skeleton from '../components/Common/Skeleton';
 import AuditResults from '../features/audit/AuditResults';
+import QuoteView from '../features/audit/QuoteView';
 
 const ResultDetailPage = () => {
   const { id } = useParams();
@@ -101,6 +103,16 @@ const ResultDetailPage = () => {
       setError('Failed to start regeneration. Please try again.');
       setIsRegenerating(false);
     }
+  };
+
+  const handleDownloadPdf = () => {
+    const pdfUrl = getQuotePdfUrl(id);
+    window.open(pdfUrl, '_blank');
+  };
+
+  const handleBuyNow = () => {
+    // TODO: Integrate Stripe payment flow
+    alert('Payment integration coming soon! Contact us to proceed with your order.');
   };
 
   if (isLoading && !request) {
@@ -261,6 +273,13 @@ const ResultDetailPage = () => {
 
           {/* New Audit Section */}
           <AuditResults auditReport={auditReport} />
+
+          {/* Quote & PDF Download Section */}
+          <QuoteView
+            visualizationRequest={request}
+            onBuyNow={handleBuyNow}
+            onDownloadPdf={handleDownloadPdf}
+          />
         </>
       )}
 

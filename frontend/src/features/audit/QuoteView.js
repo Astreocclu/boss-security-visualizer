@@ -73,7 +73,7 @@ const QuoteView = ({ visualizationRequest, onBuyNow, onDownloadPdf }) => {
                             gap: '0.5rem'
                         }}
                     >
-                        <Download size={18} /> Download Official Quote (PDF)
+                        <Download size={18} /> Download Security Report
                     </button>
                 </div>
 
