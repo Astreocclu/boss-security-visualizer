@@ -1,0 +1,381 @@
+/* Processing Screen - Full screen overlay */
+/* Navy/Orange Theme for Boss Security Screens */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+.processing-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.processing-container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Radar Animation Section */
+.radar-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.radar-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radar-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid #c05621;
+  animation: radarPulse 3s ease-out infinite;
+}
+
+.radar-ring-1 {
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+  animation-delay: 0s;
+}
+
+.radar-ring-2 {
+  width: 75%;
+  height: 75%;
+  opacity: 0.5;
+  animation-delay: 0.5s;
+}
+
+.radar-ring-3 {
+  width: 50%;
+  height: 50%;
+  opacity: 0.7;
+  animation-delay: 1s;
+}
+
+.radar-core {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #c05621;
+  border-radius: 50%;
+  box-shadow:
+    0 0 20px rgba(192, 86, 33, 0.6),
+    0 0 40px rgba(192, 86, 33, 0.4),
+    0 0 60px rgba(192, 86, 33, 0.2);
+  animation: corePulse 2s ease-in-out infinite;
+}
+
+.radar-image {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #c05621;
+  box-shadow: 0 0 30px rgba(192, 86, 33, 0.4);
+  z-index: 5;
+}
+
+@keyframes radarPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes corePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 20px rgba(192, 86, 33, 0.6),
+      0 0 40px rgba(192, 86, 33, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow:
+      0 0 30px rgba(192, 86, 33, 0.8),
+      0 0 60px rgba(192, 86, 33, 0.5);
+  }
+}
+
+/* Sales Message */
+.sales-message {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  min-height: 2em;
+  line-height: 1.4;
+  transition: opacity 0.4s ease;
+  margin: 0;
+  padding: 0 1rem;
+}
+
+.sales-message.fading {
+  opacity: 0;
+}
+
+/* Progress Section */
+.progress-section {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c05621 0%, #dd6b20 50%, #ed8936 100%);
+  border-radius: 5px;
+  transition: width 0.3s ease-out;
+  position: relative;
+}
+
+.progress-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-percentage {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #c05621;
+  min-width: 60px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fact Card */
+.fact-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(192, 86, 33, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.fact-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.fact-content {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  transition: opacity 0.4s ease;
+  min-height: 3em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.fact-content.fading {
+  opacity: 0;
+}
+
+.fact-highlight {
+  color: #ed8936;
+  font-weight: 700;
+  margin-right: 0.25em;
+}
+
+.fact-rest {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Branding */
+.branding {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.brand-name {
+  color: #c05621;
+  font-weight: 600;
+}
+
+/* Error State */
+.error-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-icon {
+  color: #fc8181;
+  margin-bottom: 1.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.error-state h2 {
+  font-family: 'Montserrat', sans-serif;
+  color: #fff;
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+}
+
+.error-message {
+  font-family: 'Inter', sans-serif;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.retry-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #c05621;
+  color: #fff;
+  border: none;
+  padding: 0.875rem 1.75rem;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #9c4221;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(192, 86, 33, 0.4);
+}
+
+.retry-button:active {
+  transform: translateY(0);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .processing-container {
+    max-width: 100%;
+    gap: 1.5rem;
+  }
+
+  .processing-screen {
+    padding: 0.75rem;
+  }
+
+  .radar-container {
+    width: 180px;
+    height: 180px;
+  }
+
+  .radar-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .sales-message {
+    font-size: 1.1rem;
+  }
+
+  .progress-percentage {
+    font-size: 1.25rem;
+  }
+
+  .fact-card {
+    padding: 1rem;
+  }
+
+  .fact-content {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .radar-container {
+    width: 150px;
+    height: 150px;
+  }
+
+  .radar-image {
+    width: 80px;
+    height: 80px;
+  }
+
+  .sales-message {
+    font-size: 1rem;
+  }
+
+  .fact-content {
+    font-size: 0.9rem;
+  }
+}

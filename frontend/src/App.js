@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import ResultsPage from './pages/ResultsPage';
 import ResultDetailPage from './pages/ResultDetailPage';
+import QuoteSuccessPage from './pages/QuoteSuccessPage';
 import UploadPage from './pages/UploadPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -70,7 +71,8 @@ function App() {
           setScreenTypes(data.results || []);
         }
       } catch (error) {
-        console.error('Error fetching screen types:', error);
+        // eslint-disable-next-line no-console
+      console.error('Error fetching screen types:', error);
       }
     };
     fetchScreenTypes();
@@ -127,6 +129,12 @@ function App() {
           <Route path="/results/:id" element={
             <ProtectedRoute>
               <ResultDetailPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/quote/success" element={
+            <ProtectedRoute>
+              <QuoteSuccessPage />
             </ProtectedRoute>
           } />
         </Routes>

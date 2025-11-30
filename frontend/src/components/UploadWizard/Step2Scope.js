@@ -71,7 +71,7 @@ const Step2Scope = ({ nextStep, prevStep }) => {
                     <div className="step-header">
                         <Shield size={48} className="step-icon" />
                         <h2>Do you want security screens on your windows?</h2>
-                        <p className="step-subtitle">Our flush-mounted screens protect without blocking the view</p>
+                        <p className="step-subtitle">Our screens mount over your windows, providing protection without blocking the view</p>
                     </div>
                     <div className="choice-cards">
                         <button className="choice-card yes" onClick={() => handleYes('hasWindows')}>
