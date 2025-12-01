@@ -185,6 +185,13 @@ const ResultDetailPage = () => {
         </div>
       </div>
 
+      {/* AI Enhancement Disclaimer */}
+      {request.status === 'complete' && (
+        <p className="ai-disclaimer">
+          AI-enhanced visualization. Lighting and weather conditions may vary from actual appearance.
+        </p>
+      )}
+
       {/* Generate Quote CTA */}
       {request.status === 'complete' && (
         <div className="quote-cta-section">
