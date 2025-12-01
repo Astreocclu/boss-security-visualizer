@@ -26,15 +26,27 @@ master (stable)
 ```
 
 ## Session Start
-1. Read PLAN.md and TODO.md
+1. Read PLAN.md, TODO.md, and SESSION-NOTES.md
 2. Check `git status` and `git branch`
-3. Tell me where we left off
+3. Tell me where we left off (reference SESSION-NOTES.md)
 4. Ask what I want to focus on today
+5. Update SESSION-NOTES.md with today's date and branch
+
+## During Session
+**Log as you go** - Update SESSION-NOTES.md incrementally:
+- After completing a significant task, add it to "What We Did"
+- When something breaks, immediately note it in "What's Broken / Blocked"
+- When you discover something important, document it
+- Don't wait until end of session to update notes
 
 ## Session End
 1. Remind me to commit if there are uncommitted changes
 2. Update TODO.md with progress
-3. Write SESSION-NOTES.md summarizing what we did and next steps
+3. Finalize SESSION-NOTES.md:
+   - Complete "What We Did" list
+   - Update "What's Working" / "What's Broken"
+   - Fill in "Next Session Should"
+   - Move to "Previous Sessions" if starting fresh next time
 4. Tell me the next logical task
 
 ## Commands

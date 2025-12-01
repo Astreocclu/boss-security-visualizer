@@ -65,17 +65,17 @@ class ScreenVisualizer:
                 
                 if step_type == 'cleanup':
                     cleanup_prompt = prompts.get_cleanup_prompt()
-                    clean_image = self._call_gemini_edit(original_image, cleanup_prompt)
+                    clean_image = self._call_gemini_edit(original_image, cleanup_prompt, step_name=step_name)
                     self._save_debug_image(clean_image, f"{i}_{step_name}")
                     current_image = clean_image
                     logger.info(f"Pipeline Step: {step_name} complete.")
-                    
+
                 elif step_type == 'insertion':
                     scope_key = step_config.get('scope_key')
                     if scope_key and scope.get(scope_key, False):
                         feature_name = step_config.get('feature_name')
                         prompt = prompts.get_screen_insertion_prompt(feature_name, options)
-                        current_image = self._call_gemini_edit(current_image, prompt)
+                        current_image = self._call_gemini_edit(current_image, prompt, step_name=step_name)
                         self._save_debug_image(current_image, f"{i}_{step_name}")
                         logger.info(f"Pipeline Step: {step_name} complete.")
                         
@@ -93,30 +93,29 @@ class ScreenVisualizer:
             logger.error(f"Pipeline failed: {e}")
             raise
 
-    def _call_gemini_edit(self, image: Image.Image, prompt: str) -> Image.Image:
+    def _call_gemini_edit(self, image: Image.Image, prompt: str, step_name: str = "unknown") -> Image.Image:
         """
         Helper method to handle the actual API call plumbing for image editing.
+        Uses Thinking Mode for better reasoning on complex edits.
         """
         try:
+            # Enable Thinking Mode - requires TEXT + IMAGE response modalities
             config_args = {
-                "response_modalities": ["IMAGE"],
+                "response_modalities": ["TEXT", "IMAGE"],
             }
-            
-            # Using Thinking Config if available (optional, based on previous implementation)
+
+            # Enable Thinking with include_thoughts=True (the original working config)
             if hasattr(types, 'ThinkingConfig'):
-                 # For edits, we might not need thinking, but let's keep it simple or follow previous pattern.
-                 # The user didn't specify, but previous code had it. Let's stick to simple generation for now unless needed.
-                 # Actually, the user's prompt implies "Vibe Coding" which might benefit from thinking, but let's stick to the basics first.
-                 pass
+                config_args['thinking_config'] = types.ThinkingConfig(include_thoughts=True)
 
             if hasattr(types, 'ImageGenerationConfig'):
-                 config_args['image_generation_config'] = types.ImageGenerationConfig(
-                    guidance_scale=70, 
+                config_args['image_generation_config'] = types.ImageGenerationConfig(
+                    guidance_scale=70,
                     person_generation="dont_generate_people"
                 )
 
             # Retry logic
-            max_retries = 3
+            max_retries = 4
             for attempt in range(max_retries):
                 try:
                     response = self.client.models.generate_content(
@@ -127,23 +126,72 @@ class ScreenVisualizer:
                     break
                 except Exception as e:
                     if "429" in str(e) and attempt < max_retries - 1:
-                        time.sleep(10 * (attempt + 1))
+                        wait_time = 10 * (attempt + 1)
+                        logger.warning(f"Rate limited, waiting {wait_time}s (attempt {attempt + 1})")
+                        time.sleep(wait_time)
                     else:
                         raise e
-            
-            # Extract image
+
+            # Log thinking/token usage for monitoring
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                usage = response.usage_metadata
+                thinking_tokens = getattr(usage, 'thoughts_token_count', 0) or 0
+                total_tokens = getattr(usage, 'total_token_count', 0) or 0
+                logger.info(f"Gemini Usage [{step_name}] - Thinking: {thinking_tokens}, Total: {total_tokens}")
+
+            # Extract and log thinking text, then extract image
+            result_image = None
+            thinking_text = []
+
             if response.candidates and response.candidates[0].content.parts:
                 for part in response.candidates[0].content.parts:
-                    if part.inline_data:
+                    # Capture thinking/reasoning text
+                    if hasattr(part, 'text') and part.text:
+                        thinking_text.append(part.text)
+                    # Capture image
+                    if hasattr(part, 'inline_data') and part.inline_data:
                         from io import BytesIO
-                        return Image.open(BytesIO(part.inline_data.data))
-            
+                        result_image = Image.open(BytesIO(part.inline_data.data))
+
+            # Log thinking to file for debugging
+            if thinking_text:
+                self._log_thinking(step_name, prompt, thinking_text)
+
+            if result_image:
+                return result_image
+
             logger.error("No image data found in response.")
             raise ScreenVisualizerError("No image data returned from AI service.")
 
         except Exception as e:
             logger.error(f"Gemini call failed: {e}")
             raise ScreenVisualizerError(f"Gemini call failed: {e}") from e
+
+    def _log_thinking(self, step_name: str, prompt: str, thinking_text: List[str]):
+        """Log Gemini's thinking/reasoning to a file for debugging and analysis."""
+        try:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            log_dir = os.path.join(settings.MEDIA_ROOT, "thinking_logs")
+            os.makedirs(log_dir, exist_ok=True)
+
+            # Use _patio_analysis suffix for patio steps to highlight dimensional reasoning
+            log_suffix = "patio_analysis" if step_name == "patio" else step_name
+            log_file = os.path.join(log_dir, f"thinking_{timestamp}_{log_suffix}.txt")
+
+            with open(log_file, 'w') as f:
+                f.write(f"=== Gemini Thinking Log ===\n")
+                f.write(f"Timestamp: {datetime.now().isoformat()}\n")
+                f.write(f"Step: {step_name}\n")
+                f.write(f"\n--- PROMPT ---\n")
+                f.write(prompt)
+                f.write(f"\n\n--- THINKING ---\n")
+                for i, text in enumerate(thinking_text):
+                    f.write(f"\n[Part {i + 1}]\n{text}\n")
+
+            logger.info(f"Thinking logged to: {log_file}")
+        except Exception as e:
+            logger.warning(f"Failed to log thinking: {e}")
 
     def _call_gemini_json(self, contents: List[Any], prompt: str) -> dict:
         """

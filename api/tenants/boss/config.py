@@ -43,7 +43,8 @@ class BossTenantConfig(BaseTenantConfig):
         ]
     
     def get_pipeline_steps(self) -> List[str]:
-        return ['cleanup', 'patio', 'windows', 'doors', 'quality_check']
+        # Order: doors → windows → patio (patio last as largest envelope)
+        return ['cleanup', 'doors', 'windows', 'patio', 'quality_check']
     
     def get_prompts_module(self):
         from . import prompts
