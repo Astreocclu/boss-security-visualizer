@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { ArrowLeft, Home, Shield, DoorOpen } from 'lucide-react';
+import { ArrowLeft, Home, Shield, DoorOpen, Plus, Minus } from 'lucide-react';
 import useVisualizationStore from '../../store/visualizationStore';
 
 const Step2Scope = ({ nextStep, prevStep }) => {
-    const { setScope } = useVisualizationStore();
+    const { scope, setScope } = useVisualizationStore();
     const [subStep, setSubStep] = useState('patio');
 
     const handleYes = (key, value = true) => {
         setScope(key, value);
-        // Pass the value directly for branching decisions
+        // Initialize counts to 1 when user says yes
+        if (key === 'hasWindows') {
+            setScope('windowCount', 1);
+        }
+        if (key === 'hasDoors') {
+            setScope('doorCount', 1);
+        }
         advanceSubStep(key, true);
     };
 
@@ -16,8 +22,11 @@ const Step2Scope = ({ nextStep, prevStep }) => {
         setScope(key, false);
         if (key === 'hasDoors') {
             setScope('doorType', null);
+            setScope('doorCount', 0);
         }
-        // Pass the value directly for branching decisions
+        if (key === 'hasWindows') {
+            setScope('windowCount', 0);
+        }
         advanceSubStep(key, false);
     };
 
@@ -25,22 +34,47 @@ const Step2Scope = ({ nextStep, prevStep }) => {
         if (subStep === 'patio') {
             setSubStep('windows');
         } else if (subStep === 'windows') {
+            if (lastKey === 'hasWindows' && lastValue === true) {
+                setSubStep('windowCount');
+            } else {
+                setSubStep('doors');
+            }
+        } else if (subStep === 'windowCount') {
             setSubStep('doors');
         } else if (subStep === 'doors') {
-            // Use the passed value instead of reading from scope
             if (lastKey === 'hasDoors' && lastValue === true) {
                 setSubStep('doorType');
             } else {
                 nextStep();
             }
         } else if (subStep === 'doorType') {
+            setSubStep('doorCount');
+        } else if (subStep === 'doorCount') {
             nextStep();
         }
     };
 
     const selectDoorType = (type) => {
         setScope('doorType', type);
-        nextStep();
+        setSubStep('doorCount');
+    };
+
+    const incrementCount = (key) => {
+        const current = scope[key] || 0;
+        setScope(key, Math.min(current + 1, 20));
+    };
+
+    const decrementCount = (key) => {
+        const current = scope[key] || 0;
+        setScope(key, Math.max(current - 1, 1));
+    };
+
+    const confirmCount = (key) => {
+        if (key === 'windowCount') {
+            setSubStep('doors');
+        } else if (key === 'doorCount') {
+            nextStep();
+        }
     };
 
     return (
@@ -85,6 +119,29 @@ const Step2Scope = ({ nextStep, prevStep }) => {
                 </>
             )}
 
+            {/* WINDOW COUNT */}
+            {subStep === 'windowCount' && (
+                <>
+                    <div className="step-header">
+                        <Shield size={48} className="step-icon" />
+                        <h2>How many windows?</h2>
+                        <p className="step-subtitle">Count the windows you want to secure</p>
+                    </div>
+                    <div className="count-selector">
+                        <button className="count-btn" onClick={() => decrementCount('windowCount')} disabled={scope.windowCount <= 1}>
+                            <Minus size={24} />
+                        </button>
+                        <span className="count-display">{scope.windowCount || 1}</span>
+                        <button className="count-btn" onClick={() => incrementCount('windowCount')}>
+                            <Plus size={24} />
+                        </button>
+                    </div>
+                    <button className="btn-primary" onClick={() => confirmCount('windowCount')}>
+                        Continue
+                    </button>
+                </>
+            )}
+
             {/* DOORS */}
             {subStep === 'doors' && (
                 <>
@@ -124,6 +181,29 @@ const Step2Scope = ({ nextStep, prevStep }) => {
                             <span>Sliding Door</span>
                         </button>
                     </div>
+                </>
+            )}
+
+            {/* DOOR COUNT */}
+            {subStep === 'doorCount' && (
+                <>
+                    <div className="step-header">
+                        <DoorOpen size={48} className="step-icon" />
+                        <h2>How many doors?</h2>
+                        <p className="step-subtitle">Count the doors you want to secure</p>
+                    </div>
+                    <div className="count-selector">
+                        <button className="count-btn" onClick={() => decrementCount('doorCount')} disabled={scope.doorCount <= 1}>
+                            <Minus size={24} />
+                        </button>
+                        <span className="count-display">{scope.doorCount || 1}</span>
+                        <button className="count-btn" onClick={() => incrementCount('doorCount')}>
+                            <Plus size={24} />
+                        </button>
+                    </div>
+                    <button className="btn-primary" onClick={() => confirmCount('doorCount')}>
+                        Continue
+                    </button>
                 </>
             )}
 

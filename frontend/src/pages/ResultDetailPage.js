@@ -1,26 +1,31 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Shield, Download } from 'lucide-react';
 import {
   getVisualizationRequestById,
-  regenerateVisualizationRequest
+  regenerateVisualizationRequest,
+  getAuditReport
 } from '../services/api';
 import './ResultDetailPage.css';
 
 import Skeleton from '../components/Common/Skeleton';
 import ProcessingScreen from '../components/ProcessingScreen';
+import LeadCaptureModal from '../components/LeadCaptureModal';
 
 const ResultDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const sliderRef = useRef(null);
+  const [searchParams] = useSearchParams();
 
   const [request, setRequest] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showOriginal, setShowOriginal] = useState(true);
-  const [isGeneratingQuote, setIsGeneratingQuote] = useState(false);
+  const [auditReport, setAuditReport] = useState(null);
+  const [showLeadModal, setShowLeadModal] = useState(false);
+
+  // Detect sales rep mode
+  const isSalesRep = searchParams.get('rep') === 'true';
 
   const fetchRequestDetails = useCallback(async () => {
     try {
@@ -31,12 +36,23 @@ const ResultDetailPage = () => {
       if (data.status === 'complete' || data.status === 'failed') {
         setIsLoading(false);
         setIsRegenerating(false);
+
+        // Fetch audit report if complete
+        if (data.status === 'complete' && !auditReport) {
+          try {
+            const audit = await getAuditReport(id);
+            setAuditReport(audit);
+          } catch (auditErr) {
+            // Audit may not exist yet, that's OK
+            console.log('Audit not available:', auditErr);
+          }
+        }
+
         return true; // Stop polling
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(`Error fetching visualization request #${id}:`, err);
-      if (err.response?.status === 404) {
+      if (err.status === 404 || err.response?.status === 404) {
         setError(`Visualization request #${id} not found.`);
         return true;
       } else {
@@ -48,7 +64,7 @@ const ResultDetailPage = () => {
       }
     }
     return false; // Continue polling
-  }, [id, isRegenerating]);
+  }, [id, isRegenerating, auditReport]);
 
   useEffect(() => {
     fetchRequestDetails();
@@ -71,23 +87,10 @@ const ResultDetailPage = () => {
       await regenerateVisualizationRequest(id);
       // Polling will pick up the status change
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('Failed to regenerate:', err);
       setError('Failed to start regeneration. Please try again.');
       setIsRegenerating(false);
     }
-  };
-
-  const handleGenerateQuote = () => {
-    setIsGeneratingQuote(true);
-    setTimeout(() => {
-      navigate('/quote/success', {
-        state: {
-          visualizationId: id,
-          afterImageUrl: resultImageUrl
-        }
-      });
-    }, 1500);
   };
 
   if (isLoading && !request) {
@@ -124,6 +127,11 @@ const ResultDetailPage = () => {
     );
   }
 
+  // Guard against null request
+  if (!request) {
+    return null;
+  }
+
   const resultImage = request.results && request.results.length > 0 ? request.results[0] : null;
   const resultImageUrl = resultImage ? resultImage.generated_image_url : null;
 
@@ -146,6 +154,9 @@ const ResultDetailPage = () => {
     );
   }
 
+  // Get vulnerability count from audit
+  const vulnerabilityCount = auditReport?.vulnerabilities?.length || 0;
+
   return (
     <div className="result-detail-page">
       <div className="result-header">
@@ -158,7 +169,7 @@ const ResultDetailPage = () => {
         </div>
       </div>
 
-      <div className="comparison-slider-container" ref={sliderRef}>
+      <div className="comparison-slider-container">
         {/* Press to Reveal Mode */}
         <div className="magic-flip-container">
           <div className={`image-layer ${showOriginal ? 'visible' : 'hidden'}`}>
@@ -192,27 +203,36 @@ const ResultDetailPage = () => {
         </p>
       )}
 
-      {/* Generate Quote CTA */}
+      {/* Simplified Security Teaser + CTA */}
       {request.status === 'complete' && (
-        <div className="quote-cta-section">
-          <button
-            className="btn-generate-quote"
-            onClick={handleGenerateQuote}
-            disabled={isGeneratingQuote}
-          >
-            <FileText size={20} />
-            {isGeneratingQuote ? 'Analyzing Dimensions...' : 'GENERATE OFFICIAL QUOTE'}
-          </button>
-        </div>
-      )}
-
-      {/* Loading Overlay */}
-      {isGeneratingQuote && (
-        <div className="quote-loading-overlay">
-          <div className="quote-loading-content">
-            <div className="quote-spinner" />
-            <p>Analyzing Dimensions...</p>
+        <div className="security-report-teaser">
+          <div className="teaser-content">
+            <Shield size={32} className="teaser-icon" />
+            <div className="teaser-text">
+              <h3>
+                {vulnerabilityCount > 0
+                  ? `${vulnerabilityCount} Security Vulnerabilit${vulnerabilityCount === 1 ? 'y' : 'ies'} Detected`
+                  : 'Security Analysis Complete'}
+              </h3>
+              <p>
+                Your free security assessment reveals what intruders see when they look at your home—and exactly how to stop them.
+              </p>
+            </div>
           </div>
+          <button
+            className="btn-download-report"
+            onClick={() => {
+              if (isSalesRep) {
+                // Sales reps skip lead capture, go direct to PDF
+                window.open(`/api/visualization/${id}/pdf/`, '_blank');
+              } else {
+                setShowLeadModal(true);
+              }
+            }}
+          >
+            <Download size={20} />
+            Download Your Free Security Report
+          </button>
         </div>
       )}
 
@@ -229,6 +249,14 @@ const ResultDetailPage = () => {
           + New Upload
         </Link>
       </div>
+
+      {/* Lead Capture Modal */}
+      <LeadCaptureModal
+        isOpen={showLeadModal}
+        onClose={() => setShowLeadModal(false)}
+        visualizationId={id}
+        isSalesRep={isSalesRep}
+      />
     </div>
   );
 };

@@ -443,3 +443,88 @@
     font-size: 1rem;
   }
 }
+
+/* Security Report Teaser */
+.security-report-teaser {
+  background: linear-gradient(135deg, rgba(26, 32, 44, 0.95) 0%, rgba(45, 55, 72, 0.95) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin: 1.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.teaser-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 280px;
+}
+
+.teaser-icon {
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.teaser-text h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.teaser-text p {
+  color: #a0aec0;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.btn-download-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%);
+  color: #1a202c;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-download-report:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+.btn-download-report:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .security-report-teaser {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem;
+  }
+
+  .teaser-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .btn-download-report {
+    width: 100%;
+    justify-content: center;
+  }
+}

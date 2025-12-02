@@ -19,6 +19,7 @@ from .ai_services import (
     AIServiceConfig
 )
 from .ai_services.providers.gemini_provider import GeminiProvider
+from .audit.services import AuditService, AuditServiceError
 
 logger = logging.getLogger(__name__)
 
@@ -169,6 +170,33 @@ class AIEnhancedImageProcessor:
                         metadata=result.metadata
                     )
                     
+                # Run security audit on original image
+                logger.info("Running security audit...")
+                visualization_request.update_progress(92, "Analyzing security vulnerabilities...")
+                try:
+                    audit_service = AuditService()
+                    audit_report = audit_service.perform_audit(visualization_request)
+                    logger.info(f"Audit complete: {len(audit_report.vulnerabilities)} vulnerabilities found")
+                except AuditServiceError as e:
+                    logger.warning(f"Audit failed (non-fatal): {e}")
+
+                # Pre-generate PDF for lead capture
+                logger.info("Generating PDF report...")
+                visualization_request.update_progress(96, "Preparing your security report...")
+                try:
+                    from .utils.pdf_generator import generate_visualization_pdf
+
+                    pdf_buffer = generate_visualization_pdf(visualization_request)
+                    pdf_filename = f"security_report_{visualization_request.id}.pdf"
+                    visualization_request.generated_pdf.save(
+                        pdf_filename,
+                        ContentFile(pdf_buffer.getvalue()),
+                        save=True
+                    )
+                    logger.info(f"PDF generated: {pdf_filename}")
+                except Exception as e:
+                    logger.warning(f"PDF generation failed (non-fatal): {e}")
+
                 logger.info("Marking request as complete...")
                 visualization_request.mark_as_complete()
                 logger.info(f"Successfully processed request {visualization_request.id}")

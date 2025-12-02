@@ -23,6 +23,7 @@ router.register(r'profile', views.UserProfileViewSet, basename='userprofile')
 router.register(r'ai-services', views.AIServiceViewSet, basename='aiservice')
 router.register(r'screentypes', views.ScreenTypeViewSet, basename='screentype')
 router.register(r'audit', AuditViewSet, basename='audit')
+router.register(r'leads', views.LeadViewSet, basename='lead')
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

@@ -252,6 +252,31 @@ class VisualizationRequest(models.Model):
         help_text="Sales scope (hasPatio, hasWindows, hasDoors, doorType)"
     )
 
+    # Opening counts for pricing
+    window_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of windows to screen"
+    )
+    door_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of doors to screen"
+    )
+    door_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('security_door', 'Single Entry Door'),
+            ('french_door', 'French Doors'),
+            ('sliding_door', 'Sliding Patio Door'),
+        ],
+        null=True,
+        blank=True,
+        help_text="Type of security door"
+    )
+    patio_enclosure = models.BooleanField(
+        default=False,
+        help_text="Include patio enclosure"
+    )
+
     # Legacy fields - kept for compatibility but deprecated
     screen_type = models.CharField(
         max_length=20,
@@ -316,6 +341,12 @@ class VisualizationRequest(models.Model):
         max_length=200,
         blank=True,
         help_text="Current processing status message"
+    )
+    generated_pdf = models.FileField(
+        upload_to='pdfs/',
+        null=True,
+        blank=True,
+        help_text="Pre-generated PDF quote/audit report"
     )
 
     objects = VisualizationRequestManager()
@@ -499,3 +530,50 @@ class GeneratedImage(models.Model):
         if self.image_width and self.image_height:
             return f"{self.image_width}x{self.image_height}"
         return None
+
+
+class Lead(models.Model):
+    """Lead captured when user downloads security report PDF."""
+
+    US_STATES = [
+        ('AL', 'Alabama'), ('AK', 'Alaska'), ('AZ', 'Arizona'), ('AR', 'Arkansas'),
+        ('CA', 'California'), ('CO', 'Colorado'), ('CT', 'Connecticut'), ('DE', 'Delaware'),
+        ('FL', 'Florida'), ('GA', 'Georgia'), ('HI', 'Hawaii'), ('ID', 'Idaho'),
+        ('IL', 'Illinois'), ('IN', 'Indiana'), ('IA', 'Iowa'), ('KS', 'Kansas'),
+        ('KY', 'Kentucky'), ('LA', 'Louisiana'), ('ME', 'Maine'), ('MD', 'Maryland'),
+        ('MA', 'Massachusetts'), ('MI', 'Michigan'), ('MN', 'Minnesota'), ('MS', 'Mississippi'),
+        ('MO', 'Missouri'), ('MT', 'Montana'), ('NE', 'Nebraska'), ('NV', 'Nevada'),
+        ('NH', 'New Hampshire'), ('NJ', 'New Jersey'), ('NM', 'New Mexico'), ('NY', 'New York'),
+        ('NC', 'North Carolina'), ('ND', 'North Dakota'), ('OH', 'Ohio'), ('OK', 'Oklahoma'),
+        ('OR', 'Oregon'), ('PA', 'Pennsylvania'), ('RI', 'Rhode Island'), ('SC', 'South Carolina'),
+        ('SD', 'South Dakota'), ('TN', 'Tennessee'), ('TX', 'Texas'), ('UT', 'Utah'),
+        ('VT', 'Vermont'), ('VA', 'Virginia'), ('WA', 'Washington'), ('WV', 'West Virginia'),
+        ('WI', 'Wisconsin'), ('WY', 'Wyoming'), ('DC', 'District of Columbia'),
+    ]
+
+    visualization = models.ForeignKey(
+        VisualizationRequest,
+        on_delete=models.CASCADE,
+        related_name='leads',
+        help_text="Associated visualization request"
+    )
+    name = models.CharField(max_length=200, help_text="Customer full name")
+    email = models.EmailField(help_text="Customer email address")
+    phone = models.CharField(max_length=20, help_text="Customer phone number")
+    address_street = models.CharField(max_length=200, help_text="Street address")
+    address_city = models.CharField(max_length=100, help_text="City")
+    address_state = models.CharField(max_length=2, choices=US_STATES, help_text="State")
+    address_zip = models.CharField(max_length=20, help_text="ZIP code")
+    is_existing_customer = models.BooleanField(
+        default=False,
+        help_text="If true, skip Monday.com push (sales rep marked as existing)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Lead"
+        verbose_name_plural = "Leads"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Lead: {self.name} ({self.email})"

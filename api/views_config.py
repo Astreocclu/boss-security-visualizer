@@ -9,15 +9,15 @@ from api.tenants import get_tenant_config
 class TenantConfigView(APIView):
     """
     API endpoint for tenant configuration.
-    
+
     Returns product choices and display options for the active tenant.
     """
     permission_classes = [permissions.AllowAny]  # Config is public
-    
+
     def get(self, request):
         try:
             config = get_tenant_config()
-            
+
             return Response({
                 'tenant_id': config.tenant_id,
                 'display_name': config.display_name,
