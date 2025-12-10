@@ -1,3 +1,8 @@
+> **DEPRECATED:** This document describes the legacy V1 architecture (Python-class inheritance).
+> Please refer to `docs/TENANT_ARCHITECTURE_V2.md` for the active Hybrid Architecture.
+
+---
+
 # Tenant Architecture Documentation
 
 ## Overview
