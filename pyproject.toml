@@ -23,7 +23,7 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["api", "homescreen_project"]
+known_first_party = ["api", "visualizer_project"]
 known_django = ["django"]
 sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 
@@ -60,7 +60,7 @@ module = "*.migrations.*"
 ignore_errors = true
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "homescreen_project.settings_test"
+DJANGO_SETTINGS_MODULE = "visualizer_project.settings_test"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = [
     "--strict-markers",
