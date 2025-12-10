@@ -32,7 +32,7 @@ python3 manage.py migrate          # apply migrations
 ### Frontend (React)
 ```bash
 cd frontend
-npm run dev      # dev server
+npm start        # dev server
 npm run build    # production build
 npm run test     # run tests
 ```
@@ -52,9 +52,9 @@ npm run test     # run tests
 - Always work on feature branches, never commit directly to master
 
 ## Session Start
-1. **Use Gemini** to read PLAN.md, TODO.md, and SESSION-NOTES.md (3+ files = delegate to Gemini)
+1. **Use Gemini** to read FEATURE-STATUS.md and WHITE-LABEL-PLAN.md (3+ files = delegate to Gemini)
    ```bash
-   gemini -p "Read PLAN.md, TODO.md, and SESSION-NOTES.md. Summarize: current status, what's broken, and next steps."
+   gemini -p "Read FEATURE-STATUS.md and WHITE-LABEL-PLAN.md. Summarize: current status, what's broken, and next steps."
    ```
 2. Check `git status` and `git branch`
 3. Tell me where we left off
@@ -74,7 +74,7 @@ npm run test     # run tests
 - Keep components small and focused
 
 ## Tech Stack
-- **Backend:** Django 5.2, DRF, SQLite (dev), PostgreSQL (prod)
+- **Backend:** Django >= 4.0, DRF, SQLite (dev), PostgreSQL (prod)
 - **Frontend:** React 19.1, React Router 7, Zustand
 - **AI:** Google Gemini via google-generativeai
 - **PDF:** ReportLab
@@ -95,7 +95,7 @@ npm run test     # run tests
 Gemini is a **consultant**, not an executor. It has 5x context but limited tool access.
 
 ### USE GEMINI FOR (text-in, text-out):
-- **Session startup** - Reading project docs (PLAN.md, TODO.md, SESSION-NOTES.md)
+- **Session startup** - Reading project docs (FEATURE-STATUS.md, WHITE-LABEL-PLAN.md)
 - **Reading 3+ files** - Always delegate to Gemini when needing to read more than 3 files
 - "What files should I look at for X?"
 - "What command would do Y?"
