@@ -2,7 +2,7 @@ import os
 import django
 from django.conf import settings
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'homescreen_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'visualizer_project.settings')
 django.setup()
 
 from api.models import VisualizationRequest, ScreenType

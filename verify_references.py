@@ -7,7 +7,7 @@ from pathlib import Path
 # Setup Django environment - use this project's directory
 PROJECT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_DIR))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'homescreen_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'visualizer_project.settings')
 django.setup()
 
 from api.ai_services.screen_visualizer import ScreenVisualizer

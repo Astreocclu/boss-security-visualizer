@@ -13,17 +13,20 @@ A Django + React application for visualizing security window screens with AI-pow
 /home/reid/testhome/boss-security-visualizer/
 
 ## Commands
+
+**Note:** Always use `python3` commands over `python` commands.
+
 ```bash
 source venv/bin/activate
-python manage.py runserver 8000
+python3 manage.py runserver 8000
 ```
 
 ### Backend (Django)
 ```bash
-python manage.py runserver        # dev server on port 8000
-python manage.py test             # run tests
-python manage.py makemigrations   # create migrations
-python manage.py migrate          # apply migrations
+python3 manage.py runserver        # dev server on port 8000
+python3 manage.py test             # run tests
+python3 manage.py makemigrations   # create migrations
+python3 manage.py migrate          # apply migrations
 ```
 
 ### Frontend (React)
@@ -49,7 +52,10 @@ npm run test     # run tests
 - Always work on feature branches, never commit directly to master
 
 ## Session Start
-1. Read PLAN.md, TODO.md, and SESSION-NOTES.md
+1. **Use Gemini** to read PLAN.md, TODO.md, and SESSION-NOTES.md (3+ files = delegate to Gemini)
+   ```bash
+   gemini -p "Read PLAN.md, TODO.md, and SESSION-NOTES.md. Summarize: current status, what's broken, and next steps."
+   ```
 2. Check `git status` and `git branch`
 3. Tell me where we left off
 4. Ask what I want to focus on today
@@ -79,3 +85,39 @@ npm run test     # run tests
 - AI bounding boxes: AuditService returns [ymin, xmin, ymax, xmax] for overlay features
 - Mock pricing currently hardcoded at $1350/window
 - ACTIVE_TENANT env var controls tenant (defaults to 'boss')
+
+---
+
+## GEMINI CLI DELEGATION
+
+**Pattern:** Claude asks Gemini for advice/commands → Gemini returns text → Claude executes with its own tools.
+
+Gemini is a **consultant**, not an executor. It has 5x context but limited tool access.
+
+### USE GEMINI FOR (text-in, text-out):
+- **Session startup** - Reading project docs (PLAN.md, TODO.md, SESSION-NOTES.md)
+- **Reading 3+ files** - Always delegate to Gemini when needing to read more than 3 files
+- "What files should I look at for X?"
+- "What command would do Y?"
+- "Analyze this code structure and suggest approach"
+- "Critique my plan - what breaks?"
+
+### CLAUDE ALWAYS EXECUTES:
+- **Web research** - Claude's WebSearch/WebFetch (Gemini can't do web)
+- **Playwright/browser tasks** - Claude runs the actual scraping
+- **File operations** - Claude reads/writes/edits
+- **Shell commands** - Claude executes what Gemini suggests
+- **Code writing** - Claude does the implementation
+
+---
+
+## ITERATIVE BRAINSTORMING
+
+For architecture decisions or complex problem-solving:
+
+1. Claude drafts initial approach
+2. Claude pipes to Gemini: `echo "[draft]" | gemini -p "Critique this. What breaks?"`
+3. Claude reads critique, revises
+4. Repeat until solid
+
+This is NOT for code writing. This is for THINKING through hard problems with a second brain that has 5x context.

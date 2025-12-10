@@ -34,3 +34,29 @@ class TenantConfigView(APIView):
                 {'error': f'Failed to load tenant config: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class TenantSchemaView(APIView):
+    """
+    API endpoint for tenant product schema.
+
+    Returns the product_categories schema for dynamic form rendering.
+    GET /api/tenant/schema/
+    """
+    permission_classes = [permissions.AllowAny]  # Schema is public
+
+    def get(self, request):
+        try:
+            config = get_tenant_config()
+
+            return Response({
+                'tenant_id': config.tenant_id,
+                'display_name': config.display_name,
+                'product_categories': config.get_product_schema(),
+                'pipeline_steps': config.get_pipeline_steps(),
+            })
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to load tenant schema: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
