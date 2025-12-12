@@ -56,7 +56,9 @@ const initialState = {
     hasPatio: false,
     hasWindows: true,
     hasDoors: false,
-    doorType: null
+    doorType: null,
+    windowCount: 0,
+    doorCount: 0
   }
 };
 

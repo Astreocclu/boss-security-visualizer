@@ -402,6 +402,48 @@ const fetchTenantConfig = async () => {
   );
 };
 
+// Audit functions
+const generateAudit = async (requestId) => {
+  return handleApiCall(
+    () => api.post(`/audit/${requestId}/generate/`),
+    'Failed to generate audit'
+  );
+};
+
+const getAuditReport = async (requestId) => {
+  return handleApiCall(
+    () => api.get(`/audit/${requestId}/retrieve_report/`),
+    'Failed to fetch audit report'
+  );
+};
+
+// Commerce functions
+const createPaymentIntent = async (data) => {
+  return handleApiCall(
+    () => api.post('/commerce/create_payment_intent/', data),
+    'Failed to create payment intent'
+  );
+};
+
+const confirmDeposit = async (data) => {
+  return handleApiCall(
+    () => api.post('/commerce/confirm_deposit/', data),
+    'Failed to confirm deposit'
+  );
+};
+
+const getQuotePdfUrl = (requestId) => {
+  return `${api.defaults.baseURL}/visualization/${requestId}/pdf/`;
+};
+
+// Lead functions
+const createLead = async (data) => {
+  return handleApiCall(
+    () => api.post('/leads/', data),
+    'Failed to submit lead'
+  );
+};
+
 // Export all functions
 export {
   // Authentication
@@ -451,40 +493,9 @@ export {
   confirmDeposit,
   getQuotePdfUrl,
 
+  // Leads
+  createLead,
+
   // Tenant Config
   fetchTenantConfig
-};
-
-// Audit functions
-const generateAudit = async (requestId) => {
-  return handleApiCall(
-    () => api.post(`/audit/${requestId}/generate/`),
-    'Failed to generate audit'
-  );
-};
-
-const getAuditReport = async (requestId) => {
-  return handleApiCall(
-    () => api.get(`/audit/${requestId}/retrieve_report/`),
-    'Failed to fetch audit report'
-  );
-};
-
-// Commerce functions
-const createPaymentIntent = async (data) => {
-  return handleApiCall(
-    () => api.post('/commerce/create_payment_intent/', data),
-    'Failed to create payment intent'
-  );
-};
-
-const confirmDeposit = async (data) => {
-  return handleApiCall(
-    () => api.post('/commerce/confirm_deposit/', data),
-    'Failed to confirm deposit'
-  );
-};
-
-const getQuotePdfUrl = (requestId) => {
-  return `${api.defaults.baseURL}/visualization/${requestId}/pdf/`;
 };

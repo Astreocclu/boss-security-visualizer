@@ -31,7 +31,7 @@ class TenantRegistryTest(TestCase):
         config = get_tenant_config()
         choices = config.get_mesh_choices()
         self.assertGreater(len(choices), 0)
-        self.assertIn(('12x12', '12x12 Standard'), choices)
+        self.assertIn(('12x12_standard', '12x12 Standard'), choices)
     
     def test_prompts_module_has_required_functions(self):
         """Prompts module should have all required functions."""

@@ -10,14 +10,16 @@ Focused on visual descriptions, not physical attributes.
 def get_cleanup_prompt():
     """
     Step 1: The Foundation.
-    Focus: Removing temporary clutter while locking reality.
+    Focus: Clean image and enhance to ideal sunny conditions.
     """
-    return "Identify and remove temporary clutter: garbage cans, hoses, toys, and loose leaves. Preserve all structural elements: columns, fans, lights, furniture, and concrete pads. Maintain the original background pixels exactly."
+    return """Please clean this image of any debris, furniture, and temporary items.
+Make the weather conditions ideal and sunny with clear blue sky.
+Keep all permanent structures exactly as they are."""
 
 def get_screen_insertion_prompt(feature_type: str, options: dict):
     """
     Generates a focused inpainting prompt for a specific feature.
-    
+
     Args:
         feature_type (str): "windows", "patio enclosure", or "entry doors"
         options (dict): Contains 'color', 'mesh_type', etc.
@@ -25,7 +27,7 @@ def get_screen_insertion_prompt(feature_type: str, options: dict):
     # Extract options with defaults
     color = options.get('color', 'Black')
     mesh_type = options.get('mesh_type', 'Standard')
-    
+
     # Map mesh density to visual opacity description
     opacity_desc = "Semi-transparent mesh" # Default
     if "privacy" in mesh_type.lower():
@@ -38,7 +40,14 @@ def get_screen_insertion_prompt(feature_type: str, options: dict):
     base_prompt = f"Photorealistic inpainting. Install {color} security screens on the {feature_type}. Render the screen material as a heavy-duty {color} mesh with {opacity_desc}. Maintain flush mounting frames. Ensure lighting and shadows interact naturally with the new mesh texture."
 
     if feature_type == "patio enclosure":
-        base_prompt += " Install vertical aluminum structural mullions every 5 feet to support the screen span."
+        # Add dimensional analysis for logging - Gemini will output this in TEXT response
+        base_prompt += """
+
+In your text response, state EXACTLY:
+- OPENING WIDTH: [X] feet
+- MULLION COUNT: [Y]
+- POSITIONS: [list]"""
+        base_prompt += " IMPORTANT: Install visible vertical aluminum structural mullions (support posts) every 5 feet across the screen span - these mullions are essential and must be clearly visible."
         base_prompt += " Focus EXCLUSIVELY on enclosing the open patio/porch areas. Leave all standard windows and other openings in their original state."
 
     return base_prompt

@@ -25,7 +25,7 @@ class AuditService:
             raise AuditServiceError("API Key missing. Please set GOOGLE_API_KEY.")
             
         self.client = genai.Client(api_key=self.api_key)
-        self.model_name = "gemini-1.5-pro-latest" # Use 1.5 Pro for better reasoning
+        self.model_name = "gemini-2.0-flash"  # Fast vision model for security analysis
 
     def perform_audit(self, visualization_request) -> AuditReport:
         """

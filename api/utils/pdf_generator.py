@@ -8,6 +8,77 @@ from reportlab.lib.units import inch
 from django.conf import settings
 from PIL import Image as PILImage
 
+# Mock pricing engine - will be replaced with real pricing from Phase 2
+PRICING = {
+    'window': 1000,
+    'door_security_door': 2500,
+    'door_french_door': 4000,
+    'door_sliding_door': 4800,
+    'patio_enclosure': 8000,
+}
+
+def calculate_quote(visualization_request):
+    """
+    Calculate quote based on model fields or scope fallback.
+    """
+    scope = visualization_request.scope or {}
+    items = []
+    total = 0
+
+    # Windows - use model field, fallback to scope + default of 3
+    window_count = visualization_request.window_count
+    if window_count == 0 and scope.get('windows'):
+        window_count = 3  # Fallback for old requests without count
+    if window_count > 0:
+        subtotal = window_count * PRICING['window']
+        items.append({
+            'name': 'Security Window Screen',
+            'qty': window_count,
+            'unit_price': PRICING['window'],
+            'subtotal': subtotal
+        })
+        total += subtotal
+
+    # Doors - use model fields, fallback to scope
+    door_count = visualization_request.door_count
+    door_type = visualization_request.door_type or scope.get('door_type', 'single')
+    if door_count == 0 and scope.get('doors'):
+        door_count = 1  # Fallback for old requests
+    if door_count > 0:
+        price_key = f'door_{door_type}' if f'door_{door_type}' in PRICING else 'door_single'
+        unit_price = PRICING[price_key]
+        subtotal = door_count * unit_price
+
+        door_names = {
+            'security_door': 'Security Entry Door',
+            'single': 'Security Entry Door',
+            'french_door': 'French Door Set',
+            'french': 'French Door Set',
+            'sliding_door': 'Sliding Patio Door',
+            'sliding': 'Sliding Patio Door',
+        }
+        items.append({
+            'name': door_names.get(door_type, 'Security Door'),
+            'qty': door_count,
+            'unit_price': unit_price,
+            'subtotal': subtotal
+        })
+        total += subtotal
+
+    # Patio enclosure - use model field, fallback to scope
+    has_patio = visualization_request.patio_enclosure or scope.get('patio')
+    if has_patio:
+        subtotal = PRICING['patio_enclosure']
+        items.append({
+            'name': 'Patio Enclosure System',
+            'qty': 1,
+            'unit_price': subtotal,
+            'subtotal': subtotal
+        })
+        total += subtotal
+
+    return {'items': items, 'total': total}
+
 def generate_visualization_pdf(visualization_request):
     """
     Generate a 5-page PDF Quote & Audit Report.
@@ -69,9 +140,15 @@ def generate_visualization_pdf(visualization_request):
     elements.append(Paragraph(f"Home Security Audit for {address}", title_style))
     elements.append(Spacer(1, 0.2*inch))
     
-    # Hero Image (Clean Original)
-    if visualization_request.original_image:
-        img_path = visualization_request.original_image.path
+    # Hero Image (Use cleaned image if available, fallback to original)
+    hero_image = None
+    if hasattr(visualization_request, 'clean_image') and visualization_request.clean_image:
+        hero_image = visualization_request.clean_image
+    elif visualization_request.original_image:
+        hero_image = visualization_request.original_image
+
+    if hero_image:
+        img_path = hero_image.path
         if os.path.exists(img_path):
             img = _get_resized_image(img_path, width=6*inch, height=4*inch)
             elements.append(img)
@@ -114,9 +191,16 @@ def generate_visualization_pdf(visualization_request):
         elements.append(Paragraph("Audit pending or not available.", body_style))
 
     # Re-show image with "Red Warning" overlay concept (Textual for now in PDF)
+    # Use cleaned image if available for better presentation
     elements.append(Spacer(1, 0.2*inch))
-    if visualization_request.original_image:
-        img_path = visualization_request.original_image.path
+    fig1_image = None
+    if hasattr(visualization_request, 'clean_image') and visualization_request.clean_image:
+        fig1_image = visualization_request.clean_image
+    elif visualization_request.original_image:
+        fig1_image = visualization_request.original_image
+
+    if fig1_image:
+        img_path = fig1_image.path
         if os.path.exists(img_path):
             img = _get_resized_image(img_path, width=5*inch, height=3.5*inch)
             elements.append(img)
@@ -161,27 +245,25 @@ def generate_visualization_pdf(visualization_request):
     
     # --- Page 4: The Investment ---
     elements.append(Paragraph("Your Investment", title_style))
-    
-    # Itemized List (Mockup logic based on scope)
-    scope = visualization_request.scope or {}
-    items = [["Item", "Quantity", "Unit Price", "Total"]]
-    
-    total = 0
-    if scope.get('hasWindows'):
-        items.append(["Standard Security Window", "3", "$450", "$1,350"])
-        total += 1350
-    if scope.get('hasDoors'):
-        items.append(["Security Door", "1", "$1,200", "$1,200"])
-        total += 1200
-    if scope.get('hasPatio'):
-        items.append(["Patio Enclosure", "1", "$2,500", "$2,500"])
-        total += 2500
-        
-    if total == 0:
+
+    # Calculate quote using pricing engine
+    quote = calculate_quote(visualization_request)
+    table_rows = [["Item", "Quantity", "Unit Price", "Total"]]
+
+    for item in quote['items']:
+        table_rows.append([
+            item['name'],
+            str(item['qty']),
+            f"${item['unit_price']:,}",
+            f"${item['subtotal']:,}"
+        ])
+
+    if not quote['items']:
         # Default if no scope
-        items.append(["Security Screen Package", "1", "TBD", "TBD"])
-        
-    items.append(["", "", "TOTAL", f"${total:,}"])
+        table_rows.append(["Security Screen Package", "1", "TBD", "TBD"])
+
+    table_rows.append(["", "", "TOTAL", f"${quote['total']:,}"])
+    items = table_rows
     
     t_quote = Table(items, colWidths=[3*inch, 1*inch, 1.5*inch, 1.5*inch])
     t_quote.setStyle(TableStyle([

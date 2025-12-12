@@ -8,6 +8,7 @@ import UploadPage from './pages/UploadPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ScreenTypesPage from './pages/ScreenTypesPage';
+import SchemaTestPage from './pages/SchemaTestPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -72,7 +73,7 @@ function App() {
         }
       } catch (error) {
         // eslint-disable-next-line no-console
-      console.error('Error fetching screen types:', error);
+        console.error('Error fetching screen types:', error);
       }
     };
     fetchScreenTypes();
@@ -137,6 +138,9 @@ function App() {
               <QuoteSuccessPage />
             </ProtectedRoute>
           } />
+
+          {/* Schema Test Route - unprotected for easy testing */}
+          <Route path="/test-schema" element={<SchemaTestPage />} />
         </Routes>
       </div>
     </div>

@@ -554,3 +554,108 @@
     text-align: center;
     margin-bottom: 1rem;
 }
+
+/* Choice Cards (Yes/No) */
+.choice-cards {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: auto;
+}
+
+.choice-cards.vertical {
+    flex-direction: column;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.choice-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--white);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.choice-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+    border-color: var(--gold-muted);
+}
+
+.choice-card.yes:hover {
+    border-color: var(--gold-primary);
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.choice-card.yes svg {
+    color: var(--gold-primary);
+}
+
+/* Count Selector */
+.count-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0 3rem;
+}
+
+.count-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid var(--gold-primary);
+    background: transparent;
+    color: var(--gold-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.count-btn:hover:not(:disabled) {
+    background: var(--gold-primary);
+    color: var(--primary-navy);
+}
+
+.count-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.count-display {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--white);
+    min-width: 100px;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-muted) 100%);
+    color: var(--primary-navy);
+    border: none;
+    padding: 14px 48px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 0 auto;
+    display: block;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}

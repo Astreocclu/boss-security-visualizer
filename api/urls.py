@@ -12,7 +12,7 @@ from .auth_views import (
 )
 
 from .audit.views import AuditViewSet
-from .views_config import TenantConfigView
+from .views_config import TenantConfigView, TenantSchemaView
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
@@ -23,6 +23,7 @@ router.register(r'profile', views.UserProfileViewSet, basename='userprofile')
 router.register(r'ai-services', views.AIServiceViewSet, basename='aiservice')
 router.register(r'screentypes', views.ScreenTypeViewSet, basename='screentype')
 router.register(r'audit', AuditViewSet, basename='audit')
+router.register(r'leads', views.LeadViewSet, basename='lead')
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [
@@ -38,6 +39,7 @@ urlpatterns = [
 
     # API endpoints
     path('config/', TenantConfigView.as_view(), name='tenant-config'),
+    path('tenant/schema/', TenantSchemaView.as_view(), name='tenant-schema'),
     path('visualization/<int:pk>/pdf/', views.VisualizationRequestViewSet.as_view({'get': 'pdf'}), name='visualization-pdf'),
     path('', include(router.urls)),
 ]

@@ -10,13 +10,14 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import VisualizationRequest, GeneratedImage, UserProfile
+from .models import VisualizationRequest, GeneratedImage, UserProfile, Lead
 from .serializers import (
     VisualizationRequestListSerializer,
     VisualizationRequestDetailSerializer,
     VisualizationRequestCreateSerializer,
     GeneratedImageSerializer,
-    UserProfileSerializer
+    UserProfileSerializer,
+    LeadSerializer
 )
 # from .tasks import process_image_request # Import later if using Celery
 
@@ -397,3 +398,33 @@ class ScreenTypeViewSet(viewsets.ViewSet):
             for code, label in choices
         ]
         return Response({'results': screen_types})
+
+
+class LeadViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for lead capture.
+    Creates a lead and returns the PDF URL for download.
+    """
+    queryset = Lead.objects.all()
+    serializer_class = LeadSerializer
+    permission_classes = [permissions.AllowAny]  # Allow public access for lead capture
+    http_method_names = ['post', 'get']  # Only allow create and list
+
+    def get_queryset(self):
+        """Filter leads by user if authenticated."""
+        if self.request.user.is_authenticated:
+            # Return leads for visualizations owned by user
+            return Lead.objects.filter(visualization__user=self.request.user)
+        return Lead.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        """Create a lead and return PDF URL."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        lead = serializer.save()
+
+        # Return the created lead with PDF URL
+        return Response(
+            self.get_serializer(lead).data,
+            status=status.HTTP_201_CREATED
+        )

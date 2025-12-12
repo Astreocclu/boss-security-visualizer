@@ -163,7 +163,8 @@ class VisualizationRequestDetailSerializer(serializers.ModelSerializer):
             'error_message', 'progress_percentage', 'status_message',
             # Write-only fields for creation
             'original_image', 'screen_type', 'opacity', 'color',
-            'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color', 'scope'
+            'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color', 'scope',
+            'window_count', 'door_count', 'door_type', 'patio_enclosure'
         ]
         read_only_fields = [
             'id', 'user', 'status', 'created_at', 'updated_at', 'task_id',
@@ -257,8 +258,9 @@ class VisualizationRequestCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VisualizationRequest
-        fields = ['id', 'original_image', 'screen_type', 'opacity', 'color', 
+        fields = ['id', 'original_image', 'screen_type', 'opacity', 'color',
                   'screen_categories', 'mesh_choice', 'frame_color', 'mesh_color', 'scope',
+                  'window_count', 'door_count', 'door_type', 'patio_enclosure',
                   'status', 'progress_percentage', 'status_message', 'created_at']
         read_only_fields = ['id', 'status', 'progress_percentage', 'status_message', 'created_at']
         extra_kwargs = {
@@ -292,5 +294,62 @@ class VisualizationRequestCreateSerializer(serializers.ModelSerializer):
                 f"Invalid frame color. Valid options: {valid_choices}"
             )
         return value
+
+
+class LeadSerializer(serializers.ModelSerializer):
+    """Serializer for lead capture."""
+    visualization_id = serializers.IntegerField(write_only=True)
+    pdf_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        from .models import Lead
+        model = Lead
+        fields = [
+            'id', 'visualization_id', 'name', 'email', 'phone',
+            'address_street', 'address_city', 'address_state', 'address_zip',
+            'is_existing_customer', 'created_at', 'pdf_url'
+        ]
+        read_only_fields = ['id', 'created_at', 'pdf_url']
+
+    def validate_visualization_id(self, value):
+        """Validate visualization exists."""
+        from .models import VisualizationRequest
+        try:
+            VisualizationRequest.objects.get(id=value)
+        except VisualizationRequest.DoesNotExist:
+            raise serializers.ValidationError("Visualization not found.")
+        return value
+
+    def validate_phone(self, value):
+        """Validate phone has at least 10 digits."""
+        digits = ''.join(c for c in value if c.isdigit())
+        if len(digits) < 10:
+            raise serializers.ValidationError("Phone must have at least 10 digits.")
+        return value
+
+    def validate_address_zip(self, value):
+        """Validate ZIP is 5 digits."""
+        digits = ''.join(c for c in value if c.isdigit())
+        if len(digits) < 5:
+            raise serializers.ValidationError("ZIP code must be at least 5 digits.")
+        return value
+
+    def create(self, validated_data):
+        from .models import VisualizationRequest, Lead
+        visualization_id = validated_data.pop('visualization_id')
+        visualization = VisualizationRequest.objects.get(id=visualization_id)
+        return Lead.objects.create(visualization=visualization, **validated_data)
+
+    def get_pdf_url(self, obj):
+        """Return the PDF URL for the visualization."""
+        request = self.context.get('request')
+        if obj.visualization.generated_pdf:
+            if request:
+                return request.build_absolute_uri(obj.visualization.generated_pdf.url)
+            return obj.visualization.generated_pdf.url
+        # Fallback to dynamic generation endpoint
+        if request:
+            return request.build_absolute_uri(f'/api/visualization/{obj.visualization.id}/pdf/')
+        return f'/api/visualization/{obj.visualization.id}/pdf/'
 
 
