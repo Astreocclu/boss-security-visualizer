@@ -76,14 +76,14 @@ def insertion_handler(
         return {'image': image}
     
     feature_name = step_config.get('feature_name', step_name)
-    
-    # Get appropriate insertion prompt
-    if hasattr(prompts, 'get_screen_insertion_prompt'):
-        prompt = prompts.get_screen_insertion_prompt(feature_name, options)
-    elif hasattr(prompts, 'get_pool_insertion_prompt'):
-        prompt = prompts.get_pool_insertion_prompt(feature_name, options)
-    else:
-        raise ValueError(f"No insertion prompt function in prompts module")
+
+    # Get insertion prompt using standard interface
+    if not hasattr(prompts, 'get_insertion_prompt'):
+        raise ValueError(
+            f"Prompts module missing get_insertion_prompt(). "
+            f"Each tenant's prompts.py must implement this function."
+        )
+    prompt = prompts.get_insertion_prompt(feature_name, options)
     
     result_image = visualizer._call_gemini_edit(image, prompt, step_name=step_name)
     

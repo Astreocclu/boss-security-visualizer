@@ -132,7 +132,7 @@ class TestInsertionHandler:
         mock_visualizer._call_gemini_edit.return_value = mock_result_image
 
         mock_prompts = Mock()
-        mock_prompts.get_screen_insertion_prompt.return_value = "Install screens"
+        mock_prompts.get_insertion_prompt.return_value = "Install screens"
 
         context = {
             'visualizer': mock_visualizer,
@@ -149,10 +149,41 @@ class TestInsertionHandler:
 
         result = insertion_handler('doors', step_config, context)
 
-        mock_prompts.get_screen_insertion_prompt.assert_called_once_with(
+        mock_prompts.get_insertion_prompt.assert_called_once_with(
             'entry doors', {'color': 'Black'}
         )
         assert result['image'] == mock_result_image
+
+
+    def test_insertion_handler_uses_generic_interface(self):
+        """insertion_handler must call get_insertion_prompt, not vertical-specific functions."""
+        # Create mock prompts module with ONLY generic interface
+        mock_prompts = MagicMock()
+        mock_prompts.get_insertion_prompt = MagicMock(return_value="Test prompt")
+        # Explicitly remove vertical-specific functions
+        del mock_prompts.get_screen_insertion_prompt
+        del mock_prompts.get_pool_insertion_prompt
+
+        mock_visualizer = MagicMock()
+        mock_visualizer._call_gemini_edit = MagicMock(return_value="result_image")
+
+        context = {
+            'visualizer': mock_visualizer,
+            'image': 'test_image',
+            'prompts': mock_prompts,
+            'scope': {'windows': True},
+            'options': {'color': 'Black'},
+        }
+        step_config = {
+            'type': 'insertion',
+            'feature_name': 'windows',
+            'scope_key': 'windows',
+        }
+
+        result = insertion_handler('windows', step_config, context)
+
+        # Verify generic interface was called
+        mock_prompts.get_insertion_prompt.assert_called_once_with('windows', {'color': 'Black'})
 
 
 class TestQualityCheckHandler:
