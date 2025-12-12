@@ -31,9 +31,18 @@ Ensure realistic water reflections and appropriate shadowing."""
 def get_quality_check_prompt(scope: dict = None) -> str:
     """Return quality check prompt for pool visualization."""
     return """Review this pool visualization for quality and realism.
-    
+
 Check for:
 - Realistic water appearance and reflections
 - Proper integration with landscape
 - Natural lighting and shadows
 - No visual artifacts or inconsistencies"""
+
+
+def get_insertion_prompt(feature_type: str, options: dict) -> str:
+    """
+    Generic insertion prompt interface for pipeline_registry.
+
+    Routes to the existing get_pool_insertion_prompt for Pools vertical.
+    """
+    return get_pool_insertion_prompt(feature_type, options)
