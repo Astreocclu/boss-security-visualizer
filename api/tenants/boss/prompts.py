@@ -98,3 +98,11 @@ def get_quality_check_prompt(scope: dict = None):
     }
     """
     return base_prompt
+
+def get_insertion_prompt(feature_type: str, options: dict) -> str:
+    """
+    Generic insertion prompt interface for pipeline_registry.
+
+    Routes to the existing get_screen_insertion_prompt for Boss vertical.
+    """
+    return get_screen_insertion_prompt(feature_type, options)
