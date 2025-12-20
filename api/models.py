@@ -194,12 +194,6 @@ class VisualizationRequest(models.Model):
         ('12x12_american', '12x12 American Standard'),
     ]
 
-    SCREEN_CATEGORY_CHOICES = [
-        ('Window', 'Window'),
-        ('Door', 'Door'),
-        ('Patio', 'Patio'),
-    ]
-
     # Choices synced with tenant config (api/tenants/boss/config.py)
     MESH_CHOICES = [
         ('10x10_standard', '10x10 Standard'),
