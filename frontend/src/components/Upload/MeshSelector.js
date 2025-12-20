@@ -13,7 +13,6 @@ const MeshSelector = ({ onSelect, selectedMeshType }) => {
 
     return (
         <div className="screen-selector" style={{ border: '2px solid red', padding: '10px', marginTop: '20px' }}>
-            <h3 style={{ color: 'red' }}>DEBUG: MESH SELECTOR IS HERE</h3>
             <label htmlFor="mesh-type">Select Mesh Specification:</label>
             <select
                 id="mesh-type"
