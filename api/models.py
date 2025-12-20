@@ -194,30 +194,25 @@ class VisualizationRequest(models.Model):
         ('12x12_american', '12x12 American Standard'),
     ]
 
-    SCREEN_CATEGORY_CHOICES = [
-        ('Window', 'Window'),
-        ('Door', 'Door'),
-        ('Patio', 'Patio'),
-    ]
-
+    # Choices synced with tenant config (api/tenants/boss/config.py)
     MESH_CHOICES = [
-        ('10x10', '10x10 Standard'),
-        ('12x12', '12x12 Standard'),
+        ('10x10_standard', '10x10 Standard'),
+        ('12x12_standard', '12x12 Standard'),
         ('12x12_american', '12x12 American'),
     ]
 
     FRAME_COLOR_CHOICES = [
-        ('Black', 'Black'),
-        ('Dark Bronze', 'Dark Bronze'),
-        ('Stucco', 'Stucco'),
-        ('White', 'White'),
-        ('Almond', 'Almond'),
+        ('black', 'Black'),
+        ('dark_bronze', 'Dark Bronze'),
+        ('stucco', 'Stucco'),
+        ('white', 'White'),
+        ('almond', 'Almond'),
     ]
 
     MESH_COLOR_CHOICES = [
-        ('Black', 'Black (Recommended)'),
-        ('Stucco', 'Stucco'),
-        ('Bronze', 'Bronze'),
+        ('black', 'Black (Recommended)'),
+        ('stucco', 'Stucco'),
+        ('bronze', 'Bronze'),
     ]
 
     screen_categories = models.JSONField(
@@ -228,21 +223,21 @@ class VisualizationRequest(models.Model):
     mesh_choice = models.CharField(
         max_length=20,
         choices=MESH_CHOICES,
-        default='12x12',
+        default='12x12_standard',
         help_text="Selected mesh type"
     )
 
     frame_color = models.CharField(
         max_length=20,
         choices=FRAME_COLOR_CHOICES,
-        default='Black',
+        default='black',
         help_text="Selected frame color"
     )
 
     mesh_color = models.CharField(
         max_length=20,
         choices=MESH_COLOR_CHOICES,
-        default='Black',
+        default='black',
         help_text="Selected mesh color"
     )
 
@@ -250,6 +245,31 @@ class VisualizationRequest(models.Model):
         default=dict,
         blank=True,
         help_text="Sales scope (hasPatio, hasWindows, hasDoors, doorType)"
+    )
+
+    # Opening counts for pricing
+    window_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of windows to screen"
+    )
+    door_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of doors to screen"
+    )
+    door_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('security_door', 'Single Entry Door'),
+            ('french_door', 'French Doors'),
+            ('sliding_door', 'Sliding Patio Door'),
+        ],
+        null=True,
+        blank=True,
+        help_text="Type of security door"
+    )
+    patio_enclosure = models.BooleanField(
+        default=False,
+        help_text="Include patio enclosure"
     )
 
     # Legacy fields - kept for compatibility but deprecated
@@ -316,6 +336,12 @@ class VisualizationRequest(models.Model):
         max_length=200,
         blank=True,
         help_text="Current processing status message"
+    )
+    generated_pdf = models.FileField(
+        upload_to='pdfs/',
+        null=True,
+        blank=True,
+        help_text="Pre-generated PDF quote/audit report"
     )
 
     objects = VisualizationRequestManager()
@@ -499,3 +525,231 @@ class GeneratedImage(models.Model):
         if self.image_width and self.image_height:
             return f"{self.image_width}x{self.image_height}"
         return None
+
+
+class Lead(models.Model):
+    """Lead captured when user downloads security report PDF."""
+
+    US_STATES = [
+        ('AL', 'Alabama'), ('AK', 'Alaska'), ('AZ', 'Arizona'), ('AR', 'Arkansas'),
+        ('CA', 'California'), ('CO', 'Colorado'), ('CT', 'Connecticut'), ('DE', 'Delaware'),
+        ('FL', 'Florida'), ('GA', 'Georgia'), ('HI', 'Hawaii'), ('ID', 'Idaho'),
+        ('IL', 'Illinois'), ('IN', 'Indiana'), ('IA', 'Iowa'), ('KS', 'Kansas'),
+        ('KY', 'Kentucky'), ('LA', 'Louisiana'), ('ME', 'Maine'), ('MD', 'Maryland'),
+        ('MA', 'Massachusetts'), ('MI', 'Michigan'), ('MN', 'Minnesota'), ('MS', 'Mississippi'),
+        ('MO', 'Missouri'), ('MT', 'Montana'), ('NE', 'Nebraska'), ('NV', 'Nevada'),
+        ('NH', 'New Hampshire'), ('NJ', 'New Jersey'), ('NM', 'New Mexico'), ('NY', 'New York'),
+        ('NC', 'North Carolina'), ('ND', 'North Dakota'), ('OH', 'Ohio'), ('OK', 'Oklahoma'),
+        ('OR', 'Oregon'), ('PA', 'Pennsylvania'), ('RI', 'Rhode Island'), ('SC', 'South Carolina'),
+        ('SD', 'South Dakota'), ('TN', 'Tennessee'), ('TX', 'Texas'), ('UT', 'Utah'),
+        ('VT', 'Vermont'), ('VA', 'Virginia'), ('WA', 'Washington'), ('WV', 'West Virginia'),
+        ('WI', 'Wisconsin'), ('WY', 'Wyoming'), ('DC', 'District of Columbia'),
+    ]
+
+    visualization = models.ForeignKey(
+        VisualizationRequest,
+        on_delete=models.CASCADE,
+        related_name='leads',
+        help_text="Associated visualization request"
+    )
+    name = models.CharField(max_length=200, help_text="Customer full name")
+    email = models.EmailField(help_text="Customer email address")
+    phone = models.CharField(max_length=20, help_text="Customer phone number")
+    address_street = models.CharField(max_length=200, help_text="Street address")
+    address_city = models.CharField(max_length=100, help_text="City")
+    address_state = models.CharField(max_length=2, choices=US_STATES, help_text="State")
+    address_zip = models.CharField(max_length=20, help_text="ZIP code")
+    is_existing_customer = models.BooleanField(
+        default=False,
+        help_text="If true, skip Monday.com push (sales rep marked as existing)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Lead"
+        verbose_name_plural = "Leads"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Lead: {self.name} ({self.email})"
+
+
+# =============================================================================
+# WHITE-LABEL CONFIGURATION MODELS
+# =============================================================================
+
+def upload_to_reference_images(instance, filename):
+    """Generate upload path for reference images."""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('reference_images', instance.tenant_id, filename)
+
+
+def upload_to_reference_thumbnails(instance, filename):
+    """Generate upload path for reference image thumbnails."""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}_thumb.{ext}"
+    return os.path.join('reference_images', instance.tenant_id, 'thumbs', filename)
+
+
+class TenantConfig(models.Model):
+    """
+    Cached tenant configuration from YAML.
+    
+    YAML files in api/tenants/{tenant}/config.yaml are the source of truth.
+    This model caches the config for runtime performance and API access.
+    """
+    tenant_id = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+        help_text="Unique tenant identifier (e.g., 'boss', 'pools')"
+    )
+    display_name = models.CharField(
+        max_length=100,
+        help_text="Human-readable tenant name"
+    )
+    product_categories = models.JSONField(
+        default=list,
+        help_text="Product category definitions for dynamic forms"
+    )
+    pipeline_steps = models.JSONField(
+        default=list,
+        help_text="Ordered list of pipeline step names"
+    )
+    step_configs = models.JSONField(
+        default=dict,
+        help_text="Configuration for each pipeline step"
+    )
+    branding = models.JSONField(
+        default=dict,
+        help_text="Branding config (colors, logo path)"
+    )
+    config_version = models.PositiveIntegerField(
+        default=1,
+        help_text="Version number, incremented on sync"
+    )
+    synced_from_yaml_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When config was last synced from YAML"
+    )
+
+    class Meta:
+        verbose_name = "Tenant Config"
+        verbose_name_plural = "Tenant Configs"
+
+    def __str__(self):
+        return f"{self.display_name} (v{self.config_version})"
+
+
+class PromptOverride(models.Model):
+    """
+    Database override for AI prompts.
+    
+    Code prompts in api/tenants/{tenant}/prompts.py are the defaults.
+    This model allows runtime override without redeployment.
+    """
+    tenant_id = models.CharField(
+        max_length=50,
+        db_index=True,
+        help_text="Tenant this override applies to"
+    )
+    step_name = models.CharField(
+        max_length=50,
+        help_text="Pipeline step name (e.g., 'cleanup', 'doors', 'quality_check')"
+    )
+    prompt_text = models.TextField(
+        help_text="Override prompt text (supports {variable} substitution)"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this override is active"
+    )
+    version = models.PositiveIntegerField(
+        default=1,
+        help_text="Version number for this override"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="User who created this override"
+    )
+
+    class Meta:
+        verbose_name = "Prompt Override"
+        verbose_name_plural = "Prompt Overrides"
+        unique_together = ['tenant_id', 'step_name', 'version']
+        ordering = ['-version']
+
+    def __str__(self):
+        status = "active" if self.is_active else "inactive"
+        return f"{self.tenant_id}/{self.step_name} v{self.version} ({status})"
+
+
+class ReferenceImage(models.Model):
+    """
+    Reference images for product options.
+    
+    These images can be uploaded by non-technical users to show
+    examples of different product options (e.g., mesh colors, pool surfaces).
+    """
+    tenant_id = models.CharField(
+        max_length=50,
+        db_index=True,
+        help_text="Tenant this image belongs to"
+    )
+    category = models.CharField(
+        max_length=50,
+        help_text="Product category key (e.g., 'mesh_type', 'pool_shape')"
+    )
+    option_value = models.CharField(
+        max_length=50,
+        help_text="Option value this image represents (e.g., 'black', 'rectangle')"
+    )
+    image = models.ImageField(
+        upload_to=upload_to_reference_images,
+        help_text="Full-size reference image"
+    )
+    thumbnail = models.ImageField(
+        upload_to=upload_to_reference_thumbnails,
+        null=True,
+        blank=True,
+        help_text="Auto-generated thumbnail"
+    )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional description of this reference image"
+    )
+    embedding = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="AI embedding vector for similarity matching (future use)"
+    )
+    uploaded_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="User who uploaded this image"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Reference Image"
+        verbose_name_plural = "Reference Images"
+        unique_together = ['tenant_id', 'category', 'option_value']
+        ordering = ['tenant_id', 'category', 'option_value']
+
+    def __str__(self):
+        return f"{self.tenant_id}/{self.category}/{self.option_value}"
+
+    def save(self, *args, **kwargs):
+        """Generate thumbnail on save if not present."""
+        super().save(*args, **kwargs)
+        # Thumbnail generation can be added here or in a signal
+

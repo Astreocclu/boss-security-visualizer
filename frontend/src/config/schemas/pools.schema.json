@@ -1,0 +1,94 @@
+{
+    "tenant_id": "pools",
+    "display_name": "Pool Visualizer",
+    "product_categories": [
+        {
+            "key": "pool_shape",
+            "label": "Pool Shape",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "rectangle",
+                    "label": "Rectangle"
+                },
+                {
+                    "value": "freeform",
+                    "label": "Freeform"
+                },
+                {
+                    "value": "kidney",
+                    "label": "Kidney"
+                },
+                {
+                    "value": "l_shape",
+                    "label": "L-Shape"
+                }
+            ]
+        },
+        {
+            "key": "pool_surface",
+            "label": "Pool Surface",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "white_plaster",
+                    "label": "White Plaster"
+                },
+                {
+                    "value": "pebble_tec_blue",
+                    "label": "Pebble Tec Blue"
+                },
+                {
+                    "value": "pebble_tec_midnight",
+                    "label": "Pebble Tec Midnight"
+                }
+            ]
+        },
+        {
+            "key": "deck_material",
+            "label": "Deck Material",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "travertine",
+                    "label": "Travertine"
+                },
+                {
+                    "value": "concrete",
+                    "label": "Concrete"
+                },
+                {
+                    "value": "pavers",
+                    "label": "Pavers"
+                }
+            ]
+        },
+        {
+            "key": "water_feature",
+            "label": "Water Feature",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "none",
+                    "label": "None"
+                },
+                {
+                    "value": "waterfall",
+                    "label": "Waterfall"
+                },
+                {
+                    "value": "fountain",
+                    "label": "Fountain"
+                },
+                {
+                    "value": "infinity_edge",
+                    "label": "Infinity Edge"
+                }
+            ]
+        }
+    ]
+}

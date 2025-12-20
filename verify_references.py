@@ -2,19 +2,21 @@ import os
 import sys
 import django
 from PIL import Image
+from pathlib import Path
 
-# Setup Django environment
-sys.path.append('/home/reid/projects/homescreen')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'homescreen_project.settings')
+# Setup Django environment - use this project's directory
+PROJECT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_DIR))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'visualizer_project.settings')
 django.setup()
 
 from api.ai_services.screen_visualizer import ScreenVisualizer
 
 def verify_references():
     print("Verifying ScreenVisualizer reference loading...")
-    
-    # Create dummy files for testing
-    base_path = "/home/reid/projects/homescreen/media/screen_references/lifestyle_environmental"
+
+    # Create dummy files for testing - use this project's media directory
+    base_path = str(PROJECT_DIR / "media" / "screen_references" / "lifestyle_environmental")
     os.makedirs(os.path.join(base_path, "80", "master"), exist_ok=True)
     os.makedirs(os.path.join(base_path, "95", "master"), exist_ok=True)
     os.makedirs(os.path.join(base_path, "99", "master"), exist_ok=True)

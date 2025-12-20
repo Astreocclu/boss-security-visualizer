@@ -1,0 +1,642 @@
+{
+  "generated_at": "2025-12-01T11:47:46.461238",
+  "sources": [
+    "americansecurityscreens.com",
+    "bosssecurityscreens.com"
+  ],
+  "counts": {
+    "windows": 25,
+    "patios": 22,
+    "doors/single": 48,
+    "doors/french": 3,
+    "doors/sliding": 6,
+    "doors/accordion": 0,
+    "_rejected": 33
+  },
+  "images": [
+    {
+      "filename": "americansecurityscreens_security_window_screens_031.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_and_security_windows_003.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_fort_worth_security_window_screens_011.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_and_security_windows_033.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_windows_209.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_window_security_018.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_companies_398.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_window_screens_355.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_and_security_windows_034.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screens_for_windows_015.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screens_for_home__281_29_043.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_how_to_secure_my_windows_434.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_window_phoenix__281_29_018.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_door_and_security_windows_200.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_Whole_House_Arch_173.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_how_to_secure_my_windows_440.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_companies_232.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_window_screens_242.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_window_000.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_window_security_screen__281_29_028.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_windows_224.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_window_screens_263.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_windows_225.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_fort_worth_security_window_screens_057.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_windows_220.png",
+      "category": "windows",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_fort_worth_security_screens_089.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_patio_enclosure_076.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_dallas_home_security_company_038.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_patio_slider_security_screens_136.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_screens_security_127.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_los_angeles_pation_enclosure_090.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_home_security_322.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_phoenix_patio_enclosure_113.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_patio_enclosure_phoenix_168.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_screen_security_dallas_061.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_screen_131.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_home_security_017.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_for_patio_sliding_door_004.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_dallas_home_security_company_244.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_patio_slider_security_screen_096.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_screen_181.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_Patio_Enclosure_las_vegas_nevada_181.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_home_security_company_305.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_screens_security_198.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_black_security_screens_patio_003.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_High-Performance_Security_Screens_099.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_home_security_company_209.png",
+      "category": "patios",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_229.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_fort_worth_security_door_413.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_063.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_door_and_security_screens_scottsdale_195.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_securities_doors_202.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_Beautiful_Security_Door_083.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_Las_Vegas_Security_Door_160.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_doors_031.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_doors_032.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_002.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_securities_doors_255.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_Sentry_Marina_271.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_Beautiful_Security_Door_141.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_screen_door_371.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_screens_106.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_door_024.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_USE-04-Door_Master_Security_-_Shelly_Beach_Job_-_D_056.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_doors_062.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_security_doors_379.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_door_security_113.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_door_security_020.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_2Bscreen_2Bdoor_2Bsummerlin_086.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_door_337.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_197.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_screens_097.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_door_021.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_door_dallas_105.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_doors_002.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_doors_summerlin_south_095.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_security_doors_370.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_security_doors_324.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_door_security_150.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_USE-04-Door_Master_Security_-_Shelly_Beach_Job_-_D_102.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_door_security_183.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_door_108.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_door_summerlin_072.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_security_doors_294.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_security_doors_320.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_door_assembly_199.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_fort_worth_security_doors_288.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_best_security_door_103.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_dallas_security_door_321.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_2Bscreen_2Bdoors_064.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_door_109.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_securities_doors_139.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_doors_dallas_006.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_securities_doors_156.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_doors_las_vegas_156.png",
+      "category": "doors/single",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_doors_for_french_doors_091.png",
+      "category": "doors/french",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_french_door_89131_048.png",
+      "category": "doors/french",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security_for_french_doors_144.png",
+      "category": "doors/french",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screen_sliding_door_077.png",
+      "category": "doors/sliding",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screens_sliding_doors_reduced_size_079.png",
+      "category": "doors/sliding",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_maxresdefault_128.png",
+      "category": "doors/sliding",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_3_panel_slider_100.png",
+      "category": "doors/sliding",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "americansecurityscreens_security-screens_177.png",
+      "category": "doors/sliding",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    },
+    {
+      "filename": "bosssecurityscreens_security_screens_for_sliders_071.png",
+      "category": "doors/sliding",
+      "confidence": 8,
+      "description": "Manually classified, deduplicated"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 from typing import List, Tuple, Dict, Any
 from ..base import BaseTenantConfig
 
+
 class BossTenantConfig(BaseTenantConfig):
     
     @property
@@ -12,38 +13,53 @@ class BossTenantConfig(BaseTenantConfig):
     def display_name(self) -> str:
         return "Boss Security Screens"
     
-    def get_mesh_choices(self) -> List[Tuple[str, str]]:
+    def get_product_schema(self) -> List[Dict[str, Any]]:
+        """
+        Product categories for Boss Security Screens.
+        
+        Note: No 'opacity' category - mesh density and color determine visibility.
+        """
         return [
-            ('10x10', '10x10 Standard'),
-            ('12x12', '12x12 Standard'),
-            ('12x12_american', '12x12 American'),
-        ]
-    
-    def get_frame_color_choices(self) -> List[Tuple[str, str]]:
-        return [
-            ('Black', 'Black'),
-            ('Dark Bronze', 'Dark Bronze'),
-            ('Stucco', 'Stucco'),
-            ('White', 'White'),
-            ('Almond', 'Almond'),
-        ]
-    
-    def get_mesh_color_choices(self) -> List[Tuple[str, str]]:
-        return [
-            ('Black', 'Black (Recommended)'),
-            ('Stucco', 'Stucco'),
-            ('Bronze', 'Bronze'),
-        ]
-    
-    def get_opacity_choices(self) -> List[Tuple[str, str]]:
-        return [
-            ('80', '80%'),
-            ('95', '95%'),
-            ('99', '99%'),
+            {
+                "key": "mesh_type",
+                "label": "Mesh Type",
+                "type": "select",
+                "required": True,
+                "options": [
+                    {"value": "10x10_standard", "label": "10x10 Standard"},
+                    {"value": "12x12_standard", "label": "12x12 Standard"},
+                    {"value": "12x12_american", "label": "12x12 American"},
+                ]
+            },
+            {
+                "key": "frame_color",
+                "label": "Frame Color",
+                "type": "select",
+                "required": True,
+                "options": [
+                    {"value": "black", "label": "Black"},
+                    {"value": "dark_bronze", "label": "Dark Bronze"},
+                    {"value": "stucco", "label": "Stucco"},
+                    {"value": "white", "label": "White"},
+                    {"value": "almond", "label": "Almond"},
+                ]
+            },
+            {
+                "key": "mesh_color",
+                "label": "Mesh Color",
+                "type": "select",
+                "required": True,
+                "options": [
+                    {"value": "black", "label": "Black (Recommended)"},
+                    {"value": "stucco", "label": "Stucco"},
+                    {"value": "bronze", "label": "Bronze"},
+                ]
+            },
         ]
     
     def get_pipeline_steps(self) -> List[str]:
-        return ['cleanup', 'patio', 'windows', 'doors', 'quality_check']
+        # Order: doors → windows → patio (patio last as largest envelope)
+        return ['cleanup', 'doors', 'windows', 'patio', 'quality_check']
     
     def get_prompts_module(self):
         from . import prompts

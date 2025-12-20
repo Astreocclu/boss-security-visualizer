@@ -1,0 +1,74 @@
+{
+    "tenant_id": "boss",
+    "display_name": "Boss Security Screens",
+    "product_categories": [
+        {
+            "key": "mesh_type",
+            "label": "Mesh Type",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "10x10_standard",
+                    "label": "10x10 Standard"
+                },
+                {
+                    "value": "12x12_standard",
+                    "label": "12x12 Standard"
+                },
+                {
+                    "value": "12x12_american",
+                    "label": "12x12 American"
+                }
+            ]
+        },
+        {
+            "key": "frame_color",
+            "label": "Frame Color",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "black",
+                    "label": "Black"
+                },
+                {
+                    "value": "dark_bronze",
+                    "label": "Dark Bronze"
+                },
+                {
+                    "value": "stucco",
+                    "label": "Stucco"
+                },
+                {
+                    "value": "white",
+                    "label": "White"
+                },
+                {
+                    "value": "almond",
+                    "label": "Almond"
+                }
+            ]
+        },
+        {
+            "key": "mesh_color",
+            "label": "Mesh Color",
+            "type": "select",
+            "required": true,
+            "options": [
+                {
+                    "value": "black",
+                    "label": "Black (Recommended)"
+                },
+                {
+                    "value": "stucco",
+                    "label": "Stucco"
+                },
+                {
+                    "value": "bronze",
+                    "label": "Bronze"
+                }
+            ]
+        }
+    ]
+}
